@@ -1,17 +1,23 @@
 from utils.embedding_based_search.embedding_based_search import EmbeddingBasedSearch
 from utils.temporal_search.temporal_search import TemporalSearch
 from utils.user_feedback.user_feedback import UserFeedback
+from utils.embedding_based_search.clip_engine import CLIP
+from utils.embedding_based_search.blip_engine import BLIP
+from utils.embedding_based_search.beit_engine import BEIT
 from utils.system_call.utils import reading_json_file
 from utils.system_call.utils import all_values_none
 
+CLIP_DIR = './dict/clip'
+BLIP_DIR = './dict/blip'
+BEIT_DIR = './dict/beit'
 
 class SearchingMethod:
-    def __init__(self, use_clip_h14=False, use_clip_l14=False, use_blip=False, use_beit=False):
+    def __init__(self, clip_h14_engine=None, clip_l14_engine=None, blip_engine=None, beit_engine=None):
         self.search_engine = EmbeddingBasedSearch(
-            use_clip_h14=use_clip_h14,
-            use_clip_l14=use_clip_l14,
-            use_blip=use_blip,
-            use_beit=use_beit
+            clip_h14_engine=clip_h14_engine,
+            clip_l14_engine=clip_l14_engine, 
+            blip_engine=blip_engine, 
+            beit_engine=beit_engine
         )
         self.local_keyframe_dict = reading_json_file(json_path='./dict/local/local_dict.json')
 
@@ -45,11 +51,12 @@ class SearchingMethod:
 
 class EmbeddingSpace:
     def __init__(self, use_clip_h14=False, use_clip_l14=False, use_blip=False, use_beit=False):
+        self.model_initialize(use_clip_h14, use_clip_l14, use_blip, use_beit)
         self.searching_method = SearchingMethod(
-            use_clip_h14=use_clip_h14,
-            use_clip_l14=use_clip_l14,
-            use_blip=use_blip,
-            use_beit=use_beit
+            clip_h14_engine=self.clip_h14_engine if use_clip_h14 else None,
+            clip_l14_engine=self.clip_l14_engine if use_clip_l14 else None, 
+            blip_engine=self.blip_engine if use_blip else None, 
+            beit_engine=self.beit_engine if use_beit else None
         )
         self.user_feedback = UserFeedback()
         self.search_history = []
@@ -64,7 +71,32 @@ class EmbeddingSpace:
         self.fusion = False
         self.current_result = {}
         self.update_model(self.use_model)
-
+    
+    def model_initialize(self, use_clip_h14=False, use_clip_l14=False, use_blip=False, use_beit=False):
+        if use_clip_h14:
+            self.clip_h14_engine = CLIP(
+                clip_bin_file=f'{CLIP_DIR}/h14_laion2b.bin',
+                clip_id2image_path=f'{CLIP_DIR}/h14_laion2b.json',
+                clip_model='ViT-H-14'
+            )
+        if use_clip_l14:
+            self.clip_l14_engine = CLIP(
+                clip_bin_file=f'{CLIP_DIR}/l14_laion400m.bin',
+                clip_id2image_path=f'{CLIP_DIR}/l14_laion400m.json',
+                clip_model='ViT-L-14'
+            )
+        if use_blip:
+            self.blip_engine = BLIP(
+                blip_bin_file=f'{BLIP_DIR}/blip_vit.bin',
+                blip_id2image_path=f'{BLIP_DIR}/blip_vit.json',
+                model_type='pretrain_vitL'
+            )
+        if use_beit:
+            self.beit_engine = BEIT(
+                beit_bin_file=f'{BEIT_DIR}/beit.bin',
+                beit_id2image_path=f'{BEIT_DIR}/beit.json'
+            )
+            
     def update_video_local(self, video_local):
         self.video_local = None if all_values_none(video_local) else video_local
 
