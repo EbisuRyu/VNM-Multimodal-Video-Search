@@ -1,0 +1,16 @@
+timm==0.4.12
+Pillow
+blobfile
+mypy
+numpy
+pytest
+tensorboardX
+scipy
+ftfy
+sentencepiece
+pyarrow
+torchmetrics==0.7.3
+transformers
+pycocotools
+pycocoevalcap
+torchscale==0.2.0
