@@ -1,4 +1,4 @@
-# Vietnamese Multimodal Video Search (Version 0.1)
+# Vietnamese Multimodal Video Search (Version 0.2)
 
 **Vietnamese Multimodal Video Search** is an advanced platform designed to enable powerful video searches using multimodal data (visual, audio, and text) with a specific focus on Vietnamese content. Developed for the **HCM AI Challenge 2024**, this system allows users to perform sophisticated queries, detect events, and retrieve specific scenes, making it particularly useful for analyzing and understanding Vietnamese news videos.
 

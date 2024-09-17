@@ -16,8 +16,8 @@ class BLIP:
         )
         self.index = load_bin_file(bin_file=blip_bin_file)
         self.id2image_fps = load_id2image_file(json_path=blip_id2image_path)
-
-    def text_search(self, query_text, image_path_subset, top_k):
+    
+    def encode_text(self, query_text):
         ##### TEXT FEATURES EXTRACTING #####
         processed_text = self.txt_processors["eval"](query_text)
         text_features = self.model.extract_features(
@@ -26,6 +26,11 @@ class BLIP:
         )
         text_features = text_features.text_embeds_proj[:, 0, :]
         text_features /= text_features.norm(dim=-1, keepdim=True)
+        return text_features
+
+    def text_search(self, query_text, image_path_subset, top_k):
+        ##### TEXT FEATURES EXTRACTING #####
+        text_features = self.encode_text(query_text)
         ##### SEARCHING #####
         if image_path_subset is None:
             scores, idx_image = self.index.search(text_features, 32*top_k)
