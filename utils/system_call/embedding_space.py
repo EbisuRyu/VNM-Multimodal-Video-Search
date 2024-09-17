@@ -93,8 +93,9 @@ class EmbeddingSpace:
             )
         if use_beit:
             self.beit_engine = BEIT(
-                beit_bin_file=f'{BEIT_DIR}/beit.bin',
-                beit_id2image_path=f'{BEIT_DIR}/beit.json'
+                model_type='base',
+                beit_bin_file=f'{BEIT_DIR}/base_beit.bin',
+                beit_id2image_path=f'{BEIT_DIR}/base_beit.json'
             )
             
     def update_video_local(self, video_local):
