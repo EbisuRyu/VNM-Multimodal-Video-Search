@@ -44,12 +44,17 @@ class CLIP:
         image_paths = list(map(self.id2image_fps.get, list(idx_image)))
         return result_format(image_paths, scores.flatten())
 
-    def text_search(self, query_text, image_path_subset, top_k):
+    def encode_text(self, query_text):
         ##### TEXT FEATURES EXTRACTING #####
         text_tokens = self.tokenizer([query_text]).to(self.__device)
         text_features = self.model.encode_text(text_tokens)
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
         text_features = text_features.cpu().detach().numpy().astype(np.float32)
+        return text_features
+
+    def text_search(self, query_text, image_path_subset, top_k):
+        ##### TEXT FEATURES EXTRACTING #####
+        text_features = self.encode_text(query_text)
         ##### SEARCHING #####
         if image_path_subset is None:
             scores, idx_image = self.index.search(text_features, top_k)

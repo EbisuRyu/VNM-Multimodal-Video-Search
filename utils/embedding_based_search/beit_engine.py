@@ -47,8 +47,8 @@ class BEIT:
         idx_image = idx_image.flatten()
         image_paths = list(map(self.id2image_fps.get, list(idx_image)))
         return result_format(image_paths, scores.flatten())
-
-    def text_search(self, query_text, image_path_subset, top_k):
+    
+    def encode_text(self, query_text):
         text_tokens = self.tokenizer(
             text=query_text,
             return_tensors='pt'
@@ -60,6 +60,11 @@ class BEIT:
                 only_infer=True
             )
             text_features /= text_features.norm(dim=-1, keepdim=True)
+        return text_features.cpu().numpy().astype(np.float32)
+    
+    
+    def text_search(self, query_text, image_path_subset, top_k):
+        text_features = self.encode_text(query_text)
         ##### SEARCHING #####
         if image_path_subset is None:
             scores, idx_image = self.index.search(text_features, top_k)

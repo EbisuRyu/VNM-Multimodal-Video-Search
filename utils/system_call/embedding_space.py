@@ -58,7 +58,11 @@ class EmbeddingSpace:
             blip_engine=self.blip_engine if use_blip else None, 
             beit_engine=self.beit_engine if use_beit else None
         )
-        self.user_feedback = UserFeedback()
+        self.user_feedback = UserFeedback(
+            clip_h14_engine=self.clip_h14_engine if use_clip_h14 else None,
+            clip_l14_engine=self.clip_l14_engine if use_clip_l14 else None,
+            beit_engine=self.beit_engine if use_beit else None
+        )
         self.search_history = []
         self.result_history = []
         self.use_model = {
@@ -107,6 +111,7 @@ class EmbeddingSpace:
     def update_model(self, use_model):
         self.use_model = use_model
         self.searching_method.search_engine.update_searching_mode(**use_model)
+        self.user_feedback.update_searching_mode(**use_model)
 
     def delete_history(self):
         self.search_history.clear()
