@@ -3,28 +3,31 @@ from utils.combine_module.utils import merge_searching_results_by_addition
 
 class EmbeddingBasedSearch:
 
-    def __init__(self, clip_h14_engine=None, clip_h14_xlm_engine=None, clip_l14_engine=None, blip_engine=None, beit_base_engine=None, beit_large_engine=None):
+    def __init__(self, clip_h14_engine=None, clip_h14_xlm_engine=None, clip_l14_engine=None, blip_vit_engine=None, blip_pretrain_engine=None, beit_base_engine=None, beit_large_engine=None):
         self.clip_h14_engine = clip_h14_engine
         self.clip_h14_xlm_engine = clip_h14_xlm_engine
         self.clip_l14_engine = clip_l14_engine
-        self.blip_engine = blip_engine
+        self.blip_vit_engine = blip_vit_engine
+        self.blip_pretrain_engine = blip_pretrain_engine
         self.beit_base_engine = beit_base_engine
         self.beit_large_engine = beit_large_engine 
         self.searching_mode = {
             'clip_h14_engine': True,
             'clip_h14_xlm_engine': True,
             'clip_l14_engine': True,
-            'blip_engine': True,
+            'blip_vit_engine': True,
+            'blip_pretrain_engine': True,
             'beit_base_engine': True,
             'beit_large_engine': True
         }
 
-    def update_searching_mode(self, clip_h14_engine=True, clip_h14_xlm_engine=True, clip_l14_engine=True, blip_engine=True, beit_base_engine=True, beit_large_engine=True):
+    def update_searching_mode(self, clip_h14_engine=True, clip_h14_xlm_engine=True, clip_l14_engine=True, blip_vit_engine=True, blip_pretrain_engine=True, beit_base_engine=True, beit_large_engine=True):
         self.searching_mode = {
             'clip_h14_engine': clip_h14_engine,
             'clip_h14_xlm_engine': clip_h14_xlm_engine,
             'clip_l14_engine': clip_l14_engine,
-            'blip_engine': blip_engine,
+            'blip_vit_engine': blip_vit_engine,
+            'blip_pretrain_engine': blip_pretrain_engine,
             'beit_base_engine': beit_base_engine,
             'beit_large_engine': beit_large_engine
         }
@@ -101,8 +104,16 @@ class EmbeddingBasedSearch:
             )
             list_results.append(result)
 
-        if self.searching_mode['blip_engine']:
-            result = self.blip_engine.text_search(
+        if self.searching_mode['blip_vit_engine']:
+            result = self.blip_vit_engine.text_search(
+                query_text=query_text,
+                image_path_subset=image_path_subset,
+                top_k=top_k
+            )
+            list_results.append(result)
+        
+        if self.searching_mode['blip_pretrain_engine']:
+            result = self.blip_pretrain_engine.text_search(
                 query_text=query_text,
                 image_path_subset=image_path_subset,
                 top_k=top_k

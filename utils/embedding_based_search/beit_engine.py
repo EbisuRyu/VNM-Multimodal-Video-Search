@@ -22,7 +22,7 @@ class BEIT:
             checkpoint = torch.load(f'{WEIGHT_DIR}/beit3_base_itc_patch16_224.pth')
             self.model.load_state_dict(checkpoint['model'])
         else:
-            self.model = beit3_large_patch16_384_retrieval(pretrained=True)
+            self.model = beit3_large_patch16_384_retrieval(pretrained=False)
             load_model_and_may_interpolate(f'{WEIGHT_DIR}/beit3_large_itc_patch16_224.pth', self.model, model_key='model', model_prefix='')
         self.model.to(self.__device)
         self.model.eval()

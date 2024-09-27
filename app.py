@@ -17,12 +17,15 @@ id_export = 0
 
 
 class SearchingSystem:
-    def __init__(self, use_clip_h14=False, use_clip_l14=False, use_blip=False, use_beit=False):
+    def __init__(self, use_clip_h14=False, use_clip_h14_xlm=False, use_clip_l14=False, use_blip_vit=True, use_blip_pretrain=True, use_base_beit=False, use_large_beit=False):
         self.embedding_space = EmbeddingSpace(
             use_clip_h14=use_clip_h14,
+            use_clip_h14_xlm=use_clip_h14_xlm,
             use_clip_l14=use_clip_l14,
-            use_blip=use_blip,
-            use_beit=use_beit
+            use_blip_vit=use_blip_vit,
+            use_blip_pretrain=use_blip_pretrain,
+            use_base_beit=use_base_beit,
+            use_large_beit=use_large_beit
         )
         self.metadata_space = MetadataSpace()
         self.current_embedding_result_subset = None

@@ -11,15 +11,23 @@ class CLIP:
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.index = load_bin_file(clip_bin_file)
         self.id2image_fps = load_id2image_file(clip_id2image_path)
-
         self.model, _, _ = open_clip.create_model_and_transforms(
             model_name=clip_model,
             device=self.__device,
-            pretrained='laion2b_s32b_b79k' if clip_model == 'ViT-H-14' else 'laion400m_e32'
+            pretrained=self.pretrained_info(clip_model)
         )
         self.model.eval()
         self.tokenizer = open_clip.get_tokenizer(clip_model)
 
+    def pretrained_info(self, clip_model):
+        if clip_model == 'ViT-H-14':
+            pretrained = 'laion2b_s32b_b79k'
+        elif clip_model == 'ViT-L-14':
+            pretrained = 'laion400m_e32'
+        elif clip_model == 'xlm-roberta-large-ViT-H-14':
+            pretrained = 'frozen_laion5b_s13b_b90k'
+        return pretrained
+    
     def image_search(self, query_image_path, image_path_subset, top_k):
         for index, image_path in self.id2image_fps.items():
             if image_path == query_image_path:
