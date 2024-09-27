@@ -53,9 +53,12 @@ class EmbeddingSpaceInterface:
     def handle_embedding_model_update(self, searching_system, translator):
         use_model = {
             'clip_h14_engine': bool(int(input('Use CLIP-H14: '))),
+            'clip_h14_xlm_engine': bool(int(input('Use CLIP-H14-xlm: '))),
             'clip_l14_engine': bool(int(input('Use CLIP-L14: '))),
-            'blip_engine': bool(int(input('Use BLIP: '))),
-            'beit_engine': bool(int(input('Use BEIT: ')))
+            'blip_vit_engine': bool(int(input('Use ViT BLIP: '))),
+            'blip_pretrain_engine': bool(int(input('Use pretrain BLIP: '))),
+            'beit_base_engine': bool(int(input('Use Base BEIT: '))),
+            'beit_large_engine': bool(int(input('Use Large BEIT: ')))
         }
         searching_system.embedding_space.update_model(use_model)
 
@@ -72,10 +75,8 @@ class EmbeddingSpaceInterface:
                 keyframes.append(user_input)
             return keyframes
 
-        pos_keyframe_subset = collect_keyframes(
-            "Enter positive keyframe path (or press Enter to finish): ")
-        neg_keyframe_subset = collect_keyframes(
-            "Enter negative keyframe path (or press Enter to finish): ")
+        pos_keyframe_subset = collect_keyframes("Enter positive keyframe path (or press Enter to finish): ")
+        neg_keyframe_subset = collect_keyframes("Enter negative keyframe path (or press Enter to finish): ")
 
         reranked_result = searching_system.embedding_space.feedback(
             query_text=query_text,
@@ -133,9 +134,12 @@ class SearchingSystem:
     def __init__(self):
         self.embedding_space = EmbeddingSpace(
             use_clip_h14=False,
+            use_clip_h14_xlm=False,
             use_clip_l14=False,
-            use_blip=False,
-            use_beit=True
+            use_blip_vit=False,
+            use_blip_pretrain=True, 
+            use_base_beit=False,
+            use_large_beit=False
         )
         self.metadata_space = MetadataSpace()
         self.current_embedding_result_subset = None

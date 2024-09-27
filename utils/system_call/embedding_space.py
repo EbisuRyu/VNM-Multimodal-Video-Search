@@ -12,12 +12,15 @@ BLIP_DIR = './dict/blip'
 BEIT_DIR = './dict/beit'
 
 class SearchingMethod:
-    def __init__(self, clip_h14_engine=None, clip_l14_engine=None, blip_engine=None, beit_engine=None):
+    def __init__(self, clip_h14_engine=None, clip_h14_xlm_engine=None, clip_l14_engine=None, blip_vit_engine=None, blip_pretrain_engine=None, beit_base_engine=None, beit_large_engine=None):
         self.search_engine = EmbeddingBasedSearch(
             clip_h14_engine=clip_h14_engine,
-            clip_l14_engine=clip_l14_engine, 
-            blip_engine=blip_engine, 
-            beit_engine=beit_engine
+            clip_h14_xlm_engine=clip_h14_xlm_engine,
+            clip_l14_engine=clip_l14_engine,            
+            blip_vit_engine=blip_vit_engine,
+            blip_pretrain_engine=blip_pretrain_engine, 
+            beit_base_engine=beit_base_engine,
+            beit_large_engine=beit_large_engine
         )
         self.local_keyframe_dict = reading_json_file(json_path='./dict/local/local_dict.json')
 
@@ -50,38 +53,52 @@ class SearchingMethod:
 
 
 class EmbeddingSpace:
-    def __init__(self, use_clip_h14=False, use_clip_l14=False, use_blip=False, use_beit=False):
-        self.model_initialize(use_clip_h14, use_clip_l14, use_blip, use_beit)
+    def __init__(self, use_clip_h14=False, use_clip_h14_xlm=False, use_clip_l14=False, use_blip_vit=False, use_blip_pretrain=False, use_base_beit=False, use_large_beit=False):
+        self.model_initialize(use_clip_h14, use_clip_h14_xlm, use_clip_l14, use_blip_vit, use_blip_pretrain, use_base_beit, use_large_beit)
         self.searching_method = SearchingMethod(
             clip_h14_engine=self.clip_h14_engine if use_clip_h14 else None,
+            clip_h14_xlm_engine=self.clip_h14_xlm_engine if use_clip_h14_xlm else None,
             clip_l14_engine=self.clip_l14_engine if use_clip_l14 else None, 
-            blip_engine=self.blip_engine if use_blip else None, 
-            beit_engine=self.beit_engine if use_beit else None
+            blip_vit_engine=self.blip_vit_engine if use_blip_vit else None,
+            blip_pretrain_engine=self.blip_pretrain_engine if use_blip_pretrain else None, 
+            beit_base_engine=self.beit_base_engine if use_base_beit else None,
+            beit_large_engine=self.beit_large_engine if use_large_beit else None
         )
         self.user_feedback = UserFeedback(
             clip_h14_engine=self.clip_h14_engine if use_clip_h14 else None,
+            clip_h14_xlm_engine=self.clip_h14_xlm_engine if use_clip_h14_xlm else None,
             clip_l14_engine=self.clip_l14_engine if use_clip_l14 else None,
-            beit_engine=self.beit_engine if use_beit else None
+            beit_base_engine=self.beit_base_engine if use_base_beit else None,
+            beit_large_engine=self.beit_large_engine if use_large_beit else None
         )
         self.search_history = []
         self.result_history = []
         self.use_model = {
             'clip_h14_engine': False,
+            'clip_h14_xlm_engine': False,
             'clip_l14_engine': False,
-            'blip_engine': False,
-            'beit_engine': False
+            'blip_vit_engine': False,
+            'blip_pretrain_engine': False,
+            'beit_base_engine': False,
+            'beit_large_engine': False
         }
         self.video_local = None
         self.fusion = False
         self.current_result = {}
         self.update_model(self.use_model)
     
-    def model_initialize(self, use_clip_h14=False, use_clip_l14=False, use_blip=False, use_beit=False):
+    def model_initialize(self, use_clip_h14=False, use_clip_h14_xlm=False, use_clip_l14=False, use_blip_vit=False, use_blip_pretrain=False, use_base_beit=False, use_large_beit=False):
         if use_clip_h14:
             self.clip_h14_engine = CLIP(
                 clip_bin_file=f'{CLIP_DIR}/h14_laion2b.bin',
                 clip_id2image_path=f'{CLIP_DIR}/h14_laion2b.json',
                 clip_model='ViT-H-14'
+            )
+        if use_clip_h14_xlm:
+            self.clip_h14_xlm_engine = CLIP(
+                clip_bin_file=f'{CLIP_DIR}/h14_xlm_laion5b.bin',
+                clip_id2image_path=f'{CLIP_DIR}/h14_xlm_laion5b.json',
+                clip_model='xlm-roberta-large-ViT-H-14'
             )
         if use_clip_l14:
             self.clip_l14_engine = CLIP(
@@ -89,17 +106,29 @@ class EmbeddingSpace:
                 clip_id2image_path=f'{CLIP_DIR}/l14_laion400m.json',
                 clip_model='ViT-L-14'
             )
-        if use_blip:
-            self.blip_engine = BLIP(
+        if use_blip_vit:
+            self.blip_vit_engine = BLIP(
                 blip_bin_file=f'{BLIP_DIR}/blip_vit.bin',
                 blip_id2image_path=f'{BLIP_DIR}/blip_vit.json',
                 model_type='pretrain_vitL'
             )
-        if use_beit:
-            self.beit_engine = BEIT(
+        if use_blip_pretrain:
+            self.blip_pretrain_engine = BLIP(
+                blip_bin_file=f'{BLIP_DIR}/blip_pretrain.bin',
+                blip_id2image_path=f'{BLIP_DIR}/blip_pretrain.json',
+                model_type='pretrain'
+            )
+        if use_base_beit:
+            self.beit_base_engine = BEIT(
                 model_type='base',
                 beit_bin_file=f'{BEIT_DIR}/base_beit.bin',
                 beit_id2image_path=f'{BEIT_DIR}/base_beit.json'
+            )
+        if use_large_beit:
+            self.beit_large_engine = BEIT(
+                model_type='large',
+                beit_bin_file=f'{BEIT_DIR}/large_beit.bin',
+                beit_id2image_path=f'{BEIT_DIR}/large_beit.json'
             )
             
     def update_video_local(self, video_local):
