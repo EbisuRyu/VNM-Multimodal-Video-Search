@@ -316,8 +316,7 @@ def init_distributed_mode(args):
 
     torch.cuda.set_device(args.gpu)
     args.dist_backend = 'nccl'
-    print('| distributed init (rank {}): {}, gpu {}'.format(
-        args.rank, args.dist_url, args.gpu), flush=True)
+    print('| distributed init (rank {}): {}, gpu {}'.format(args.rank, args.dist_url, args.gpu), flush=True)
     torch.distributed.init_process_group(
         backend=args.dist_backend, init_method=args.dist_url,
         world_size=args.world_size, rank=args.rank,
@@ -338,10 +337,8 @@ def load_state_dict(model, state_dict, prefix='', ignore_missing="relative_posit
         state_dict._metadata = metadata
 
     def load(module, prefix=''):
-        local_metadata = {} if metadata is None else metadata.get(
-            prefix[:-1], {})
-        module._load_from_state_dict(
-            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs)
+        local_metadata = {} if metadata is None else metadata.get(prefix[:-1], {})
+        module._load_from_state_dict(state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs)
         for name, child in module._modules.items():
             if child is not None:
                 load(child, prefix + name + '.')
@@ -415,11 +412,9 @@ def get_grad_norm_(parameters, norm_type: float = 2.0) -> torch.Tensor:
         return torch.tensor(0.)
     device = parameters[0].grad.device
     if norm_type == inf:
-        total_norm = max(p.grad.detach().abs().max().to(device)
-                         for p in parameters)
+        total_norm = max(p.grad.detach().abs().max().to(device) for p in parameters)
     else:
-        total_norm = torch.norm(torch.stack([torch.norm(
-            p.grad.detach(), norm_type).to(device) for p in parameters]), norm_type)
+        total_norm = torch.norm(torch.stack([torch.norm(p.grad.detach(), norm_type).to(device) for p in parameters]), norm_type)
     return total_norm
 
 
@@ -481,8 +476,7 @@ def auto_load_model(args, model, model_without_ddp, optimizer, loss_scaler, mode
         # torch.amp
         if args.auto_resume and len(args.resume) == 0:
             import glob
-            all_checkpoints = glob.glob(
-                os.path.join(output_dir, 'checkpoint-*.pth'))
+            all_checkpoints = glob.glob(os.path.join(output_dir, 'checkpoint-*.pth'))
             latest_ckpt = -1
             for ckpt in all_checkpoints:
                 t = ckpt.split('-')[-1].split('.')[0]
@@ -495,8 +489,7 @@ def auto_load_model(args, model, model_without_ddp, optimizer, loss_scaler, mode
 
         if args.resume:
             if args.resume.startswith('https'):
-                checkpoint = torch.hub.load_state_dict_from_url(
-                    args.resume, map_location='cpu', check_hash=True)
+                checkpoint = torch.hub.load_state_dict_from_url(args.resume, map_location='cpu', check_hash=True)
             else:
                 checkpoint = torch.load(args.resume, map_location='cpu')
             model_without_ddp.load_state_dict(checkpoint['model'])
@@ -505,8 +498,7 @@ def auto_load_model(args, model, model_without_ddp, optimizer, loss_scaler, mode
                 optimizer.load_state_dict(checkpoint['optimizer'])
                 args.start_epoch = checkpoint['epoch'] + 1
                 if hasattr(args, 'model_ema') and args.model_ema:
-                    _load_checkpoint_for_ema(
-                        model_ema, checkpoint['model_ema'])
+                    _load_checkpoint_for_ema(model_ema, checkpoint['model_ema'])
                 if 'scaler' in checkpoint:
                     loss_scaler.load_state_dict(checkpoint['scaler'])
                 print("With optim & sched!")
@@ -537,8 +529,7 @@ def auto_load_model(args, model, model_without_ddp, optimizer, loss_scaler, mode
 # The implementation code is modified from DeiT (https://github.com/facebookresearch/deit.git)
 def load_model_and_may_interpolate(ckpt_path, model, model_key, model_prefix):
     if ckpt_path.startswith('https'):
-        checkpoint = torch.hub.load_state_dict_from_url(
-            ckpt_path, map_location='cpu', check_hash=True)
+        checkpoint = torch.hub.load_state_dict_from_url(ckpt_path, map_location='cpu', check_hash=True)
     else:
         checkpoint = torch.load(ckpt_path, map_location='cpu')
 
@@ -568,35 +559,29 @@ def load_model_and_may_interpolate(ckpt_path, model, model_key, model_prefix):
                 # being consistent with Fairseq, which starts from 2 for position embedding
                 torchscale_model = True
                 num_patches = model.beit3.vision_embed.num_patches
-                num_extra_tokens = model.beit3.vision_embed.num_position_embeddings() + 2 - \
-                    num_patches
+                num_extra_tokens = model.beit3.vision_embed.num_position_embeddings() + 2 - num_patches
             else:
                 torchscale_model = False
                 num_patches = model.patch_embed.num_patches
                 num_extra_tokens = getattr(
                     model, pos_embed_key).shape[-2] - num_patches
             # height (== width) for the checkpoint position embedding
-            orig_size = int(
-                (pos_embed_checkpoint.shape[-2] - num_extra_tokens) ** 0.5)
+            orig_size = int((pos_embed_checkpoint.shape[-2] - num_extra_tokens) ** 0.5)
             # height (== width) for the new position embedding
             new_size = int(num_patches ** 0.5)
             # class_token and dist_token are kept unchanged
             if orig_size != new_size:
-                print("Position interpolate from %dx%d to %dx%d" %
-                      (orig_size, orig_size, new_size, new_size))
+                print("Position interpolate from %dx%d to %dx%d" % (orig_size, orig_size, new_size, new_size))
                 if torchscale_model:
-                    extra_tokens = pos_embed_checkpoint[:num_extra_tokens].unsqueeze(
-                        0)
+                    extra_tokens = pos_embed_checkpoint[:num_extra_tokens].unsqueeze(0)
                     # only the position tokens are interpolated
                     pos_tokens = pos_embed_checkpoint[num_extra_tokens:]
                 else:
                     extra_tokens = pos_embed_checkpoint[:, :num_extra_tokens]
                     # only the position tokens are interpolated
                     pos_tokens = pos_embed_checkpoint[:, num_extra_tokens:]
-                pos_tokens = pos_tokens.reshape(-1, orig_size,
-                                                orig_size, embedding_size).permute(0, 3, 1, 2)
-                pos_tokens = torch.nn.functional.interpolate(
-                    pos_tokens, size=(new_size, new_size), mode='bicubic', align_corners=False)
+                pos_tokens = pos_tokens.reshape(-1, orig_size, orig_size, embedding_size).permute(0, 3, 1, 2)
+                pos_tokens = torch.nn.functional.interpolate(pos_tokens, size=(new_size, new_size), mode='bicubic', align_corners=False)
                 pos_tokens = pos_tokens.permute(0, 2, 3, 1).flatten(1, 2)
                 new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
                 if torchscale_model:
