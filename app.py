@@ -8,13 +8,14 @@ import io
 import os
 import cv2
 import time
+import json
+import re
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 id_export = 0
-
 
 class SearchingSystem:
     def __init__(self, use_clip_h14=False, use_clip_h14_xlm=False, use_clip_l14=False, use_blip_vit=True, use_blip_pretrain=True, use_base_beit=False, use_large_beit=False):
@@ -31,8 +32,7 @@ class SearchingSystem:
         self.current_embedding_result_subset = None
         self.current_metadata_result_subset = None
 
-
-model_list = [False, False, False, False]  # clip, clip2, blip, beit
+model_list = [False, False, False, False, False, False, False, False]  # cliph14, cliph14xlm, clipl14, blipvit, blippretrain, basebeit, largebeit
 searching_system = None
 translator = Translator()
 
@@ -50,12 +50,15 @@ def index():
 def select_model():
     global searching_system, model_list
     data = request.get_json()
-    model_list = data['query']  # list bool [clip_h14, clip_l14, blip, beit]
+    model_list = data['query']  # list bool [cliph14, cliph14xlm, clipl14, blipvit, blippretrain, basebeit, largebeit]
     searching_system = SearchingSystem(
         use_clip_h14=model_list[0],
-        use_clip_l14=model_list[1],
-        use_blip=model_list[2],
-        use_beit=model_list[3]
+        use_clip_h14_xlm=model_list[1],
+        use_clip_l14=model_list[2],
+        use_blip_vit=model_list[3],
+        use_blip_pretrain=model_list[4],
+        use_base_beit=model_list[5],
+        use_large_beit=model_list[6]
     )
     return jsonify(okresponse)
 
@@ -124,7 +127,7 @@ def process_query():
             print('delete embedding')
             return jsonify(okresponse)
 
-        if query[1] == 2:  # option = 2: search [type, option, topk, fussion, query_text_1, query_text_2, local_L, local_V, clip_h14, clip_l14, blip, beit]
+        if query[1] == 2:  # option = 2: search [type, option, topk, fussion, query_text_1, query_text_2, local_L, local_V, clip_h14, clip_h14_xlm, clip_l14, blip_vit, blip_pretrain, beit_base, beit_large]
             startTime = time.time()
 
             searching_system.embedding_space.update_fusion_mode(bool(query[3]))
@@ -137,9 +140,12 @@ def process_query():
 
             searching_system.embedding_space.update_model({
                 'clip_h14_engine': bool(query[8]),
-                'clip_l14_engine': bool(query[9]),
-                'blip_engine': bool(query[10]),
-                'beit_engine': bool(query[11])
+                'clip_h14_xlm_engine': bool(query[9]),
+                'clip_l14_engine': bool(query[10]),
+                'blip_vit_engine': bool(query[11]),
+                'blip_pretrain_engine': bool(query[12]),
+                'beit_base_engine': bool(query[13]),
+                'beit_large_engine': bool(query[14])
             })
 
             if detect(query[4]) == 'vi':
@@ -179,12 +185,15 @@ def process_query():
             result_with_index = {i: [key, float(value)] for i, (key, value) in enumerate(reranked_result.items())}  # add index to result_info {0: [key, value], 1: [key, value], ...}
             return jsonify(result_with_index)
 
-        if query[1] == 6:  # option = 6: image similarity [type, option, image_path, topk, clip_h14, clip_l14, blip, beit]
+        if query[1] == 6:  # option = 6: image similarity [type, option, image_path, topk, clip_h14, clip_h14_xlm, clip_l14, blip_vit, blip_pretrain, beit_base, beit_large]
             searching_system.embedding_space.update_model({
                 'clip_h14_engine': bool(query[4]),
-                'clip_l14_engine': bool(query[5]),
-                'blip_engine': bool(query[6]),
-                'beit_engine': bool(query[7])
+                'clip_h14_xlm_engine': bool(query[5]),
+                'clip_l14_engine': bool(query[6]),
+                'blip_vit_engine': bool(query[7]),
+                'blip_pretrain_engine': bool(query[8]),
+                'beit_base_engine': bool(query[9]),
+                'beit_large_engine': bool(query[10])
             })
 
             result = searching_system.embedding_space.image_similarity(
@@ -197,13 +206,30 @@ def process_query():
             result_with_index = {i: [key, float(value)] for i, (key, value) in enumerate(result.items())}  # add index to result_info {0: [key, value], 1: [key, value], ...}
             return jsonify(result_with_index)
 
-    elif typeSearch == "video":
-        if query[1] == 1:  # option=1: get frame rate ['video', 1, 'L01_V001']
-            video_path = os.path.join('static', 'video', query[2]) + '.mp4'
-            video = cv2.VideoCapture(video_path)
+    elif typeSearch == "video": # ['video', 1, L01_V001]
+        # get frame rate
+        map_keyframe = os.path.join('static', 'map-keyframes', query[2] + '.csv')
+        df = pd.read_csv(map_keyframe)
+        fps = df['fps'][0]
+        print(fps)
 
-            frame_rate = video.get(cv2.CAP_PROP_FPS)
+        # get video path or youtube link
+        video_path = os.path.join('static', 'video', query[2]) + '.mp4'
+        if not os.path.exists(video_path): # open on youtube
+            with open('static/media-info/' + query[2] + '.json', 'r') as f:
+                info_file = json.load(f)
+                return jsonify('youtube', fps, info_file['watch_url'])
+        
+        # open local video
+        local_video = '../' + video_path
+        return jsonify('local_video', fps, local_video)
+    
+    elif typeSearch == "keyframe": # ['keyframe', local_L, local_V]
+        dir_path = os.path.join('static', 'distilled_keyframe', query[1], query[2])
+        keyframe_list = os.listdir(dir_path)
+        keyframe_list.sort(key=lambda filename: int(re.search(r'(\d+)', filename).group(0)))
 
-            return jsonify(frame_rate)
+        result = {i: ['/distilled_keyframe/'+query[1]+'/'+query[2]+'/'+jpg, 1] for i, jpg in enumerate(keyframe_list)}
 
+        return jsonify(result)
     return jsonify(okresponse)
