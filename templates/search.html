@@ -97,15 +97,17 @@
     <link href="../static/index.css" rel="stylesheet" />
     <div id="divMain">
       <div id="divPreview">
-        <div id="controlPreview">
-          <h2 style="margin-right: 10px;"> Preview result </h2>
+      
+          <h2 style="margin: 5px;"> Preview result </h2>
+          <div>
           <input type="text" placeholder="Query index" class="input" id="inpQueryId"/>
           
           <button type="button" class="btnControl" onclick="ExportRes(this)"> Export</button>
-        </div>
+          <button type="button" class="btnControl" onclick="openPreview()"> ❌ </button>
+            </div>
         
         <textarea id="inpPreviewRes">
-        haha
+   
         </textarea>
       </div>
       <div id="divSearchObj">
@@ -274,7 +276,6 @@
 
         </div>
         <div id="divControlBBox">
-          
           <button type="button" class="btnControl button btnGroup" onclick="groupbtn(this, 0)">
             Group
           </button>
@@ -306,7 +307,7 @@
 
 
         <div class="divObjAllRes">
-          <div class="divObjRes">
+          <div class="divObjRes" ondrop="dropFrame(event)" ondragover="allowDrop(event)">
            
 
           </div>
@@ -322,34 +323,58 @@
             <textarea placeholder="Query" class="textarea inpQueryTxt enterToSearch" id="inpTxtNext"></textarea>
             {% if model_list[0] %}
             <div>
-              <input type="checkbox" onclick="controlTick(1)"/>
+              <input type="checkbox" onclick="controlTick(20)"/>
               <span>CLIP-H/14</span>
             </div>
             {% endif %}
 
             {% if model_list[1] %}
             <div>
-              <input type="checkbox" onclick="controlTick(2)"/>
-              <span>CLIP-L/14</span>
+              <input type="checkbox" onclick="controlTick(21)"/>
+              <span>CLIP-H/14-XLM</span>
             </div>
             {% endif %}
 
             {% if model_list[2] %}
             <div>
-              <input type="checkbox" onclick="controlTick(3)"/>
-              <span>BLIP2</span>
-            </div>  
+              <input type="checkbox" onclick="controlTick(22)"/>
+              <span>CLIP-L/14</span>
+            </div>
             {% endif %}
 
             {% if model_list[3] %}
             <div>
-              <input type="checkbox" onclick="controlTick(6)"/>
+              <input type="checkbox" onclick="controlTick(23)"/>
+              <span>BLIP-VIT</span>
+            </div>  
+            {% endif %}
+
+            {% if model_list[4] %}
+            <div>
+              <input type="checkbox" onclick="controlTick(24)"/>
+              <span>BLIP-PRETRAIN</span>
+            </div>  
+            {% endif %}
+
+            {% if model_list[5] %}
+            <div>
+              <input type="checkbox" onclick="controlTick(25)"/>
               <span>BEIT</span>
+            </div>  
+            {% endif %}
+
+            {% if model_list[6] %}
+            <div>
+              <input type="checkbox" onclick="controlTick(26)"/>
+              <span>BEIT-LARGE</span>
             </div>  
             {% endif %}
           </div>
 
           <div class="divOptionTxt">
+            <button type="button" class="btnControl button" onclick="hideDivMeta()">
+              Meta-S
+            </button>
             <input type="text" placeholder="topk" class="inpTopk input enterToSearch" id="topkTxt"/>
             <div class="divSelect">
               <select class="selectBar" id="selectFilter">
@@ -368,6 +393,10 @@
             <div>
               <input type="checkbox" checked="true" onclick="controlTick(5)" />
               <button onclick="sendFeedback()" class="btnControl btn">Feedback</button>
+            </div>
+            <div>
+              <input type="checkbox" checked="true" onclick="controlTick(7)" />
+              <button onclick="sendUpvote()" class="btnControl btn">Upvote</button>
             </div>
             <button type="button" class="btnControl button btnGroup" onclick="groupbtn(this, 1)">
               Group
@@ -476,10 +505,7 @@
 
     var fussionTxt = false,
         fussionBBox = false,
-        useClip = false,
-        useClip2 = false,
-        useBlip2 = false,
-        useBeit = false,
+        useClipH = false, useClipH_XLM = false, useClipL = false, useBlipVit = false, useBlipPretrain = false, useBeit = false, useBeitLarge = false;
         isFeedback = true;
 
     var historySearch = [''];
@@ -499,6 +525,10 @@
     var inpQueryId = document.getElementById('inpQueryId'),
         inpVQA = document.getElementById('inpVQA'),
         inpPreviewRes = document.getElementById('inpPreviewRes');
+
+    var isUpvote = true;
+
+    var selectedUpvote = new Set();
     //--------------------Function--------------------
 
     /* Show dropdown when click Labels, Labels recommend, Tags, Tags recommend */
@@ -791,12 +821,16 @@
     function txtQuery() {
       let typeSearch = 'embedding';
       let local_L = '', local_V = '';
+      let queryCurrent = inpTxtCurrent.value, queryNext = inpTxtNext.value;
       if (inpL.value !== '' && inpV.value !== '') {
         local_L = 'L'+inpL.value; local_V = 'V'+inpV.value;
+        if (queryCurrent === '' && queryNext === '') { // Show keyframe in local
+          return ['keyframe', local_L, local_V];
+        }
       }
-      let queryCurrent = inpTxtCurrent.value, queryNext = inpTxtNext.value;
+      
       let topk = inpTopkTxt.value;
-      return [typeSearch, 2, topk, fussionTxt, queryCurrent, queryNext, local_L, local_V, useClip, useClip2, useBlip2, useBeit];
+      return [typeSearch, 2, topk, fussionTxt, queryCurrent, queryNext, local_L, local_V, useClipH, useClipH_XLM, useClipL, useBlipVit, useBlipPretrain, useBeit, useBeitLarge];
     }
 
     /* control when tick checkbox, idScene=0 when current and =1 when next */
@@ -804,24 +838,38 @@
       if (idTick === 0) {
         fussionBBox = !fussionBBox; return;
       } 
-      if (idTick === 1) {
-        useClip = !useClip; return;
-      }
-      if (idTick === 2) {
-        useClip2 = !useClip2; return;
-      }
-      if (idTick === 3) {
-        useBlip2 = !useBlip2; return;
-      }
       if (idTick === 5) {
         isFeedback = !isFeedback; feedbackbtn(); return;
       }
       if (idTick === 4) {
         fussionTxt = !fussionTxt; return;
       }
-      if (idTick === 6) {
+      if (idTick === 7) {
+        isUpvote = !isUpvote; upvotebtn(); return;
+      }
+
+      if (idTick === 20) {
+        useClipH = !useClipH; return;
+      }
+      if (idTick === 21) {
+        useClipH_XLM = !useClipH_XLM; return;
+      }
+      if (idTick === 22) {
+        useClipL = !useClipL; return;
+      }
+      if (idTick === 23) {
+        useBlipVit = !useBlipVit; return;
+      }
+      if (idTick === 24) {
+        useBlipPretrain = !useBlipPretrain; return;
+      }
+      if (idTick === 25) {
         useBeit = !useBeit; return;
       }
+      if (idTick === 26) {
+        useBeitLarge = !useBeitLarge; return;
+      }
+
     }
 
     /* Click btn Feedback in Txt */
@@ -831,16 +879,28 @@
         for (let btn of feedback) {
           btn.style.display = 'flex';
         }
-        feedbackCheck[0].checked = true;
       } else {
         for (let btn of feedback) {
           btn.style.display = 'none';
           btn.classList.remove('clickedRec');
         }
-        feedbackCheck[0].checked = false;
       }
     }
 
+    /* Click btn upvote in Txt */
+    function upvotebtn() {
+      let upvote = divRes[1].getElementsByClassName('btnUpvote');
+      if (isUpvote) {
+        for (let btn of upvote) {
+          btn.style.display = 'flex';
+        }
+      } else {
+        for (let btn of upvote) {
+          btn.style.display = 'none';
+          btn.classList.remove('clickedVote');
+        }
+      }
+    }
     /* Click btn Group in BBox (id=0) and Txt (id=1) */
     function groupbtn(btn, id) {
       isGroup[id] = !isGroup[id];
@@ -879,13 +939,16 @@
       let nFrame = split[2].split('.')[0];
       let srcImg = split.join('/');
       let divFrame = `
-  <div class="divFrame ${nVideo} ${idFrame}" title="${frame}" style="width: ${frameWidth[id]}px; height: ${frameHeight[id]}px;">
+  <div class="divFrame ${nVideo} ${idFrame}" draggable="true" ondragstart="dragFrame(event)" title="${frame}" style="width: ${frameWidth[id]}px; height: ${frameHeight[id]}px;">
     <span class="txtIDFrame" onclick="playVideo('${nVideo}', '${nFrame}')" ${isHideID[id] ? `style="display: none;"` : ''}>${nFrame}</span>
     <img src="../static/distilled_keyframe/${srcImg}" class="imgFrame"/>
     ${id == 1 ? `
     
     <button type="button" class="btnRec button btnRecAndNotRec" ${isFeedback ? '' : `style="display: none;"`} onclick="recFrame(this, ${id}, '${frame}')">
       ▲
+    </button>
+    <button type="button" class="btnUpvote button" ${isUpvote ? '' : `style="display: none;"`} onclick="upvote(this)">
+      ❤️‍🔥
     </button>
     <button type="button" class="btnNotRec button btnRecAndNotRec" ${isFeedback ? '' : `style="display: none;"`} onclick="notRecFrame(this, ${id}, '${frame}')">
       ▼
@@ -903,9 +966,12 @@
     function displayRes(id) {
       let containerRes = divRes[id];
       containerRes.innerHTML = '';
+      selectedUpvote = new Set();
 
       let containerFrame = document.createElement('div');
       containerFrame.className = 'divObjRes';
+      containerFrame.setAttribute('ondrop', 'dropFrame(event)');
+      containerFrame.setAttribute('ondragover', 'allowDrop(event)');
 
       if (ResDict[id] !== undefined) {
         for (let key in ResDict[id]) {
@@ -923,6 +989,7 @@
     function displayResGroup(id) {
       let containerRes = divRes[id];
       containerRes.innerHTML = '';
+      selectedUpvote = new Set();
 
     if (ResDict[id] !== undefined) {
       for (let key in ResDict[id]) {
@@ -933,6 +1000,8 @@
         if (!containerFrame) {
           containerFrame = document.createElement('div');
           containerFrame.className = `divObjRes ${nVideo}`;
+          containerFrame.setAttribute('ondrop', 'dropFrame(event)');
+          containerFrame.setAttribute('ondragover', 'allowDrop(event)');
           containerRes.appendChild(containerFrame);
           // id video
           let divID = document.createElement('span');
@@ -1046,6 +1115,17 @@
       }
     }
 
+    /* Click Upvote frame */
+    function upvote(btn) {
+      if (btn.classList.contains('clickedVote')) {
+        btn.classList.remove('clickedVote');
+        selectedUpvote.delete(btn.parentNode);
+      } else {
+        btn.classList.add('clickedVote');
+        selectedUpvote.add(btn.parentNode);
+      }
+    }
+
     /* Click Search */
     var btnSearch = document.getElementsByClassName('btnSearch');
     function Search(type) {
@@ -1057,7 +1137,7 @@
       } else {
         query = metaQuery();
         btnSearch[0].classList.add('btnclicked');
-      setTimeout(()=>{btnSearch[0].classList.remove('btnclicked');}, 200);
+        setTimeout(()=>{btnSearch[0].classList.remove('btnclicked');}, 200);
       }
       let querySearch = {'query': query};
       console.log(querySearch);
@@ -1072,12 +1152,19 @@
       .then(response => response.json())
       .then(data => {
         console.log(data);
-        if (type === 'metadata') {
+        if (query[0] === 'metadata') {
           ResDict[0] = {...data};
           if (isGroup[0]) {
             displayResGroup(0);
           } else {
             displayRes(0);
+          }
+        } else if (query[0] === 'keyframe') {
+          ResDict[1] = {...data};
+          if (isGroup[1]) {
+            displayResGroup(1);
+          } else {
+            displayRes(1);
           }
         } else {
           ResDict[1] = {...data};
@@ -1092,12 +1179,8 @@
           } else {
             displayRes(1);
           }
-
           tag_current_query = query[4];
           tag_next_query = query[5];
-
-          
-
         }
         
       })
@@ -1195,6 +1278,10 @@
       });
       pos_keyframe_subset = new Set();
       neg_keyframe_subset = new Set();
+      let clickRecbtn = divRes[1].getElementsByClassName('clickedRec');
+      for (let btn of clickRecbtn) {
+        btn.classList.remove('clickedRec');
+      }
     }
     var tag_current_query = '', tag_next_query = '';
     function tagRecommend() {
@@ -1219,6 +1306,25 @@
         });
     }
     
+    function sendUpvote() {
+      if (isGroup[1]) {
+        alert('Please ungroup before upvote');
+        return;
+      }
+      if (selectedUpvote.size === 0) {
+        alert('Please select frame to upvote');
+        return;
+      }
+      let containerDivFrame = divRes[1].getElementsByClassName('divObjRes')[0];
+      Array.from(selectedUpvote).reverse().forEach(frameDiv => {
+        containerDivFrame.prepend(frameDiv);
+        frameDiv.getElementsByClassName('clickedVote')[0].classList.remove('clickedVote');
+
+      });
+
+        // Clear the set after moving frames
+      selectedUpvote = new Set();
+    }
     function playVideo(nVideo, nFrame) { //  nVideo="L01_V001" nFrame="00001"
       let querySearch = {'query': ['video', 1, nVideo]}; // get frameRate
       fetch('/process_query', {
@@ -1231,18 +1337,24 @@
       .then(response => response.json())
       .then(data => {
         console.log(data);
-        let keyframe_time = parseInt(nFrame) / parseInt(data);
-        let urlVideo = "../static/video/" + nVideo + ".mp4";
-        
-        const newWindow = window.open('', '_blank');
-        const htmlContent = `<!DOCTYPE html><html><head><title>${nVideo}</title></head><body><video id="videoPlayer" controls autoplay><source src="${urlVideo}" type="video/mp4">Your browser does not support the video tag.</video><script>document.getElementById('videoPlayer').onloadedmetadata = function() { this.currentTime = ${keyframe_time}; };` + '</scr' + 'ipt></body></html>';
-
-
-
-        // Write HTML content to the new window
-        newWindow.document.write(htmlContent);
-        // Close the document to finish writing
-        newWindow.document.close();
+        let type_video = data[0]; 
+        let keyframe_time = Math.round(parseInt(nFrame, 10) / data[1]);
+        let url_video = data[2];
+        if (type_video === 'local_video') { // Show local video
+          const newWindow = window.open('', '_blank');
+          const htmlContent = `<!DOCTYPE html><html><head><title>${nVideo}</title></head><body><video id="videoPlayer" controls autoplay><source src="${url_video}" type="video/mp4">Your browser does not support the video tag.</video><script>document.getElementById('videoPlayer').onloadedmetadata = function() { this.currentTime = ${keyframe_time}; };` + '</scr' + 'ipt></body></html>';
+          // Write HTML content to the new window
+          newWindow.document.write(htmlContent);
+          // Close the document to finish writing
+          newWindow.document.close();
+        } else { // open youtube video
+          let urlVideo = url_video + '&t=' + keyframe_time + 's';
+          console.log(urlVideo);
+          const newWindow = window.open(urlVideo, '_blank');
+        }
+       
+        console.log(url_video);
+        console.log(keyframe_time);
       });
     }
 
@@ -1290,7 +1402,7 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
     }
     
     function similaritySearch(frame) {
-      let querySearch = {'query': ['embedding', 6, frame, inpTopkTxt.value, useClip, useClip2, useBlip2, useBeit]};
+      let querySearch = {'query': ['embedding', 6, frame, inpTopkTxt.value, useClipH, useClipH_XLM, useClipL, useBlipVit, useBlipPretrain, useBeit, useBeitLarge]};
       fetch('/process_query', {
         method: 'POST',
         headers: {
@@ -1313,18 +1425,20 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
       contentcsv = '';
       let vqa_ans = inpVQA.value.trim();
       let countRes = 0;
-      for (let key in ResDict[1]) {
-        let value = ResDict[1][key];
-        let frame = value[0]; // score = value[1]. frame = './distilled_keyframe/L06/V013/34328.jpg'
-        let split = frame.split('/').slice(-3); // ['L06', 'V013', '34328.jpg']
+
+      let listFrame = divRes[1].getElementsByClassName('divFrame');
+      for (let frame of listFrame) {
+        let srcframe = frame.title;
+        let split = srcframe.split('/').slice(-3); // ['L06', 'V013', '34328.jpg']
         let nVideo = split.slice(0, 2).join('_');
         let nFrame = split[2].split('.')[0];
-        
+
         let line_res = `${nVideo}, ${nFrame}${vqa_ans !== '' ? ', ' + vqa_ans : ''}\n`;
         contentcsv += line_res;
         countRes++;
         if (countRes === 100) break;
       }
+      
       inpPreviewRes.value = contentcsv;
     }
 
@@ -1353,11 +1467,9 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
       isPreview = !isPreview;
       if (isPreview) {
         generateContentCSV();
-        divPreview.style.display = 'block';
-        divMeta.style.display = 'none';
+        divPreview.style.display = 'flex';
       } else {
         divPreview.style.display = 'none';
-        divMeta.style.display = 'flex';
       }
 
     }
@@ -1366,6 +1478,26 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
       let id = parseInt(selectFilter.value, 10);
       restoreHistory(id);
     });
+
+    function hideDivMeta() {
+      if (divMeta.style.display !== 'flex') {
+        divMeta.style.display = 'flex';
+      } else {
+        divMeta.style.display = 'none';
+      }
+    }
+    
+    // Drag drop frame
+    var sourceFrame = null;
+    function dragFrame(event) {
+      sourceFrame = event.target.closest('.divFrame'); 
+    }
+    function dropFrame(event) {
+      event.preventDefault();
+      const targetFrame = event.target.closest('.divFrame'); 
+      let container = targetFrame.parentNode; 
+      container.insertBefore(sourceFrame, targetFrame);
+    }
 
     // Enter to search
     for (let i = 0, maxi = enterToSearchTxt.length; i < maxi; i++) {
@@ -1385,24 +1517,14 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
       });
     }
    
-    inpQueryId.addEventListener('keydown', function(event) {
-      if (event.key === "Enter") {
-        event.preventDefault(); // Ngăn hành động mặc định nếu cần
-        ExportRes();
-      }
-    });
+
     inpVQA.addEventListener('keydown', function(event) {
       if (event.key === "Enter") {
         event.preventDefault(); // Ngăn hành động mặc định nếu cần
         openPreview();
       }
     });
-    inpPreviewRes.addEventListener('keydown', function(event) {
-      if (event.key === "Enter") {
-        event.preventDefault(); // Ngăn hành động mặc định nếu cần
-        ExportRes();
-      }
-    });
+
 
 </script>
 </body>

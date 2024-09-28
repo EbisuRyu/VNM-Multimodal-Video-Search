@@ -12,9 +12,11 @@
 #divPreview {
   display: none;
   flex: 0 0 auto;
-  width: 500px;
+  flex-direction: column;
+  align-items: center;
+  width: 250px;
   height: 99vh;
-  
+  margin-right: 8px;
   padding: 8px;
   background-color: white;
   border-radius: 8px;
@@ -23,6 +25,7 @@
 }
 #controlPreview {
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 #inpPreviewRes {
@@ -30,6 +33,7 @@
   width: 100%;
   height: 88vh;
   padding: 8px;
+  border-radius: 4px;
   background-color: #F5F4FD;
 }
 #inpQueryId {
@@ -45,7 +49,8 @@
   flex: 0 0 auto;
   width: 500px;
   height: 99vh;
-  display: flex;
+  display: none;
+  margin-right: 8px;
   align-items: flex-start;
   flex-direction: column;
 }
@@ -264,6 +269,7 @@
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
+  justify-content: center;
   width: 100%;
   padding: 4px;
   position: relative;
@@ -319,7 +325,6 @@
   padding: 0px;
   flex-grow: 1;
   align-items: flex-start;
-  margin-left: 8px;
   flex-direction: column;
 }
 #divQueryAndControlTxt {
@@ -391,7 +396,7 @@
   justify-content: flex-start;
 }
 .selectBar {
-  width: 250px;
+  width: 200px;
   height: 30px;
 }
 span{
@@ -438,6 +443,20 @@ span{
   line-height: 1;
   border-width: 0px;
   background-color: #20AD2D;
+}
+.btnUpvote {
+  top: 45%;
+  right: 0px;
+  width: 15px;
+  height: 15px;
+  padding: 3px;
+  position: absolute;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  border-width: 0px;
+  background-color: #820084;
 }
 .btnSimilarity {
   color: white;
@@ -515,5 +534,10 @@ button {
 
 .clickedRec {
   outline: 2px solid red;
+  
+}
+
+.clickedVote {
+  outline: 2px solid blue;
   
 }

@@ -40,30 +40,39 @@
     <h1>Select model</h1>
     <div>
     <input type="checkbox" name="model" value="CLIPH" onclick="controlTick(0)">CLIP-H/14
-    <input type="checkbox" name="model" value="CLIPL" onclick="controlTick(1)">CLIP-L/14
-    <input type="checkbox" name="model" value="BLIP2" onclick="controlTick(2)">BLIP2
-    <input type="checkbox" name="model" value="BEIT" onclick="controlTick(3)">BEIT
+    <input type="checkbox" name="model" value="CLIPH_XLM" onclick="controlTick(1)">CLIP-H/14-XLM
+    <input type="checkbox" name="model" value="CLIPL" onclick="controlTick(2)">CLIP-L/14
+    <input type="checkbox" name="model" value="BLIP_VIT" onclick="controlTick(3)">BLIP-VIT
+    <input type="checkbox" name="model" value="BLIP_PRETRAIN" onclick="controlTick(4)">BLIP-PRETRAIN
+    <input type="checkbox" name="model" value="BEIT" onclick="controlTick(5)">BEIT
+    <input type="checkbox" name="model" value="BEIT_LARGE" onclick="controlTick(6)">BEIT-LARGE
     </div>
     <button onclick="selectModel(this)"> OK </button> 
 
     <script>
-      var useClip = false, useClip2 = false, useBlip2 = false, useBeit = false;
+      var useClipH = false, useClipH_XLM = false, useClipL = false, useBlipVit = false, useBlipPretrain = false, useBeit = false, useBeitLarge = false;
       function controlTick(id) {
         if (id == 0) {
-          useClip = !useClip;
+          useClipH = !useClipH;
         } else if (id == 1) {
-          useClip2 = !useClip2;
+          useClipH_XLM = !useClipH_XLM;
         } else if (id == 2) {
-          useBlip2 = !useBlip2;
+          useClipL = !useClipL;
         } else if (id == 3) {
+          useBlipVit = !useBlipVit;
+        } else if (id == 4) {
+          useBlipPretrain = !useBlipPretrain;
+        } else if (id == 5) {
           useBeit = !useBeit;
+        } else if (id == 6) {
+          useBeitLarge = !useBeitLarge;
         }
       }
 
       function selectModel(btnSearch) {
         btnSearch.classList.add('btnclicked');
       setTimeout(()=>{btnSearch.classList.remove('btnclicked');}, 200);
-        let query = {'query': [useClip, useClip2, useBlip2, useBeit]};
+        let query = {'query': [useClipH, useClipH_XLM, useClipL, useBlipVit, useBlipPretrain, useBeit, useBeitLarge]};
         fetch('/select_model', {
         method: 'POST',
         headers: {
