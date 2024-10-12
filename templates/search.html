@@ -1485,8 +1485,12 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
       if (isPreview) {
         generateContentCSV();
         divPreview.style.display = 'flex';
+        inpTxtCurrent.style.width = '420px';
+        inpTxtNext.style.width = '420px';
       } else {
         divPreview.style.display = 'none';
+        inpTxtCurrent.style.width = '500px';
+        inpTxtNext.style.width = '500px';
       }
 
     }
