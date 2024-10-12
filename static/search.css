@@ -9,7 +9,7 @@
   font-family: Notosans, sans-serif;
 }
 #logoteam {
-  width: 200px;
+  width: 170px;
   align-self: center;
   object-fit: cover;
   margin-left: 1vhl;
@@ -404,6 +404,8 @@
   justify-content: flex-start;
 }
 .selectBar {
+  background-color: rgb(245, 244, 253);
+  border-radius: 8px;
   width: 400px;
   height: 30px;
 }
