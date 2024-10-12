@@ -6,7 +6,11 @@
   <meta property="og:title" content="AIO-Annivators" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta charset="utf-8" />
-
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
   <style data-tag="reset-style-sheet">
     html {
       line-height: 1.15;
@@ -94,15 +98,15 @@
 
 <body>
   <div>
-    <link href="../static/index.css" rel="stylesheet" />
+    <link href="../static/search.css" rel="stylesheet" />
     <div id="divMain">
       <div id="divPreview">
       
-          <h2 style="margin: 5px;"> Preview result </h2>
+          <h2 style="margin: 5px; color:#1f3078; "> Preview result </h2>
           <div>
           <input type="text" placeholder="Query index" class="input" id="inpQueryId"/>
           
-          <button type="button" class="btnControl" onclick="ExportRes(this)"> Export</button>
+          <button type="button" class="btnControl" onclick="ExportRes(this)" style="background-color: green; color:white;padding:4px;"> Export</button>
           <button type="button" class="btnControl" onclick="openPreview()"> ❌ </button>
             </div>
         
@@ -298,8 +302,8 @@
             +
           </button>
           
-          <button type="button" class="btnSearch button" onclick="Search('metadata')">
-            🔍
+          <button type="button" class="btnSearch button" onclick="Search('metadata')" style="height:30px;">
+            SEARCH
           </button>
           
         </div>
@@ -319,57 +323,73 @@
 
           <!-- Current scene Txt-->
           <div class="divQueryTxt">
-            <textarea placeholder="Query" class="textarea inpQueryTxt enterToSearch" id="inpTxtCurrent"></textarea>
-            <textarea placeholder="Query" class="textarea inpQueryTxt enterToSearch" id="inpTxtNext"></textarea>
-            {% if model_list[0] %}
+            <img src="../static/images/logo_team.png"
+            id="logoteam"
+            />
             <div>
-              <input type="checkbox" onclick="controlTick(20)"/>
-              <span>CLIP-H/14</span>
+             <div style="display:flex; margin-top: 2px;">
+              <textarea placeholder="Query current scene" class="textarea inpQueryTxt enterToSearch" id="inpTxtCurrent"></textarea>
+              <textarea placeholder="Query next scene" class="textarea inpQueryTxt enterToSearch" id="inpTxtNext"></textarea>
+              <button type="button" class="btnSearch button" onclick="Search('embedding')">
+                SEARCH
+              </button>
+             </div>
+
+            <div style="display:flex;margin-top: 5px;justify-content: center;">
+
+              {% if model_list[0] %}
+              <div>
+                <input type="checkbox" onclick="controlTick(20)"/>
+                <span>CLIP-H/14</span>
+              </div>
+              {% endif %}
+
+              {% if model_list[1] %}              
+              <div style="margin-left: 10px;">
+                <input type="checkbox" onclick="controlTick(21)"/>
+                <span>CLIP-XLM</span>
+              </div>
+              {% endif %}
+
+              {% if model_list[2] %}
+              <div style="margin-left: 10px;">
+                <input type="checkbox" onclick="controlTick(22)"/>
+                <span>CLIP-L/14</span>
+              </div>
+              {% endif %}
+
+              {% if model_list[3] %}
+              <div style="margin-left: 10px;">
+                <input type="checkbox" onclick="controlTick(23)"/>
+                <span>BLIP-VIT</span>
+              </div>  
+              {% endif %}
+
+              {% if model_list[4] %}
+              <div style="margin-left: 10px;">
+                <input type="checkbox" onclick="controlTick(24)"/>
+                <span>BLIP-P</span>
+              </div>  
+              {% endif %}
+
+              {% if model_list[5] %}
+              <div style="margin-left: 10px;">
+                <input type="checkbox" onclick="controlTick(25)"/>
+                <span>BEIT</span>
+              </div>  
+              {% endif %}
+
+              {% if model_list[6] %} 
+              <div style="margin-left: 10px;">
+                <input type="checkbox" onclick="controlTick(26)"/>
+                <span>BEIT-L</span>
+              </div>  
+              {% endif %}
             </div>
-            {% endif %}
-
-            {% if model_list[1] %}
-            <div>
-              <input type="checkbox" onclick="controlTick(21)"/>
-              <span>CLIP-H/14-XLM</span>
-            </div>
-            {% endif %}
-
-            {% if model_list[2] %}
-            <div>
-              <input type="checkbox" onclick="controlTick(22)"/>
-              <span>CLIP-L/14</span>
-            </div>
-            {% endif %}
-
-            {% if model_list[3] %}
-            <div>
-              <input type="checkbox" onclick="controlTick(23)"/>
-              <span>BLIP-VIT</span>
-            </div>  
-            {% endif %}
-
-            {% if model_list[4] %}
-            <div>
-              <input type="checkbox" onclick="controlTick(24)"/>
-              <span>BLIP-PRETRAIN</span>
-            </div>  
-            {% endif %}
-
-            {% if model_list[5] %}
-            <div>
-              <input type="checkbox" onclick="controlTick(25)"/>
-              <span>BEIT</span>
-            </div>  
-            {% endif %}
-
-            {% if model_list[6] %}
-            <div>
-              <input type="checkbox" onclick="controlTick(26)"/>
-              <span>BEIT-LARGE</span>
-            </div>  
-            {% endif %}
           </div>
+             
+          </div>
+        
 
           <div class="divOptionTxt">
             <button type="button" class="btnControl button" onclick="hideDivMeta()">
@@ -378,7 +398,7 @@
             <input type="text" placeholder="topk" class="inpTopk input enterToSearch" id="topkTxt"/>
             <div class="divSelect">
               <select class="selectBar" id="selectFilter">
-                <option value='0'>Empty search history</option>
+                <option value='0'>Search history</option>
               </select>
               <button type="button" class="btnControl button" onclick="clearHistory()">
                 Clear
@@ -410,12 +430,9 @@
             <button type="button" class="btnControl button" onclick="zoomframe(1, 1)">
               +
             </button>
-            <button type="button" class="btnSearch button" onclick="Search('embedding')">
-              🔍
-            </button>
             <input type="text" placeholder="VQA" class="inpTopk input" id="inpVQA"/>
-            <button type="button" class="btnSearch button" onclick="openPreview()" style="background-color: green;">
-              ⬇️
+            <button type="button" class="btnControl button" onclick="openPreview()" style="background-color: green;color:white;padding:4px;">
+              Export
             </button>
           </div>
 
@@ -1192,7 +1209,7 @@
 
     /* Click Clear history */
     function clearHistory() {
-      selectFilter.innerHTML = "<option value='0'>Empty search history</option>";
+      selectFilter.innerHTML = "<option value='0'>Search history</option>";
       nHistory = 0;
       currentHistory = 0;
       historySearch = [''];
@@ -1482,8 +1499,14 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
     function hideDivMeta() {
       if (divMeta.style.display !== 'flex') {
         divMeta.style.display = 'flex';
+        inpTxtCurrent.style.width = '290px';
+        inpTxtNext.style.width = '290px';
+        selectFilter.style.width = '150px';
       } else {
         divMeta.style.display = 'none';
+        inpTxtCurrent.style.width = '500px';
+        inpTxtNext.style.width = '500px';
+        selectFilter.style.width = '400px';
       }
     }
     

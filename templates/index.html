@@ -1,53 +1,93 @@
-<html>
-<head>
-    <title>Select model</title>
-    <style>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Page - Healthy Bossy Scorpion</title>
+    <meta property="og:title" content="Select models - Annivator Search" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+
+    <style data-tag="reset-style-sheet">
+      html {  line-height: 1.15;}body {  margin: 0;}* {  box-sizing: border-box;  border-width: 0;  border-style: solid;}p,li,ul,pre,div,h1,h2,h3,h4,h5,h6,figure,blockquote,figcaption {  margin: 0;  padding: 0;}button {  background-color: transparent;}button,input,optgroup,select,textarea {  font-family: inherit;  font-size: 100%;  line-height: 1.15;  margin: 0;}button,select {  text-transform: none;}button,[type="button"],[type="reset"],[type="submit"] {  -webkit-appearance: button;}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner {  border-style: none;  padding: 0;}button:-moz-focus,[type="button"]:-moz-focus,[type="reset"]:-moz-focus,[type="submit"]:-moz-focus {  outline: 1px dotted ButtonText;}a {  color: inherit;  text-decoration: inherit;}input {  padding: 2px 4px;}img {  display: block;}html { scroll-behavior: smooth  }
+    </style>
+    <style data-tag="default-style-sheet">
+      html {
+        font-family: Notosans, sans-serif;
+        font-size: 16px;
+      }
+
       body {
-        padding: 20px;
-        font-family: Arial, Helvetica, sans-serif;
-        background-color: #F1F0F9;
-        font-size: 20px;
-        text-align: center;
-        
-      }
-      button {
-        
-  color: white;
-  height: 35px;
-  width: 100px;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 800;
-  padding-top: 4PX;
-  border-width: 0px;
-  padding-left: 10PX;
-  padding-right: 10PX;
-  padding-bottom: 4PX;
-  background-color: rgb(13, 0, 255);
-  margin-left: 2px;
-  margin-top: 10px;
-  border-radius: 4px;
-}
-      input {
-        margin-left: 20px;
-      }
-      .btnclicked {
-        background-color: #f03fb2;
+        font-weight: 400;
+        font-style:normal;
+        text-decoration: none;
+        text-transform: none;
+        letter-spacing: normal;
+        line-height: 1.15;
+        color: var(--dl-color-theme-neutral-dark);
+        background: var(--dl-color-theme-neutral-light);
+
+        fill: var(--dl-color-theme-neutral-dark);
       }
     </style>
-</head>
-<body>
-    <h1>Select model</h1>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+
+  </head>
+  <body>
     <div>
-    <input type="checkbox" name="model" value="CLIPH" onclick="controlTick(0)">CLIP-H/14
-    <input type="checkbox" name="model" value="CLIPH_XLM" onclick="controlTick(1)">CLIP-H/14-XLM
-    <input type="checkbox" name="model" value="CLIPL" onclick="controlTick(2)">CLIP-L/14
-    <input type="checkbox" name="model" value="BLIP_VIT" onclick="controlTick(3)">BLIP-VIT
-    <input type="checkbox" name="model" value="BLIP_PRETRAIN" onclick="controlTick(4)">BLIP-PRETRAIN
-    <input type="checkbox" name="model" value="BEIT" onclick="controlTick(5)">BEIT
-    <input type="checkbox" name="model" value="BEIT_LARGE" onclick="controlTick(6)">BEIT-LARGE
+      <link href="../static/select_model.css" rel="stylesheet" />
+
+      <div id="main-container">
+        <div id="header">
+          <img
+            src="../static/images/logo_team.png"
+            alt="image"
+            id="logo-img"
+          />
+          <div id="container-navbar">
+            <span class="item-navbar">About us</span>
+            <span class="item-navbar">Github</span>
+          </div>
+        </div>
+        <div id="select-container">
+          <span id="heading">Select models</span>
+          <div id="container-models">
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="CLIPH" onclick="controlTick(0)">
+              <span class="name-model">CLIP-H/14</span>
+            </div>
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="CLIPH_XLM" onclick="controlTick(1)">
+              <span class="name-model">CLIP-H/14-XLM</span>
+            </div>
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="CLIPL" onclick="controlTick(2)">
+              <span class="name-model">CLIP-L/14</span>
+            </div>
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="BLIP_VIT" onclick="controlTick(3)">
+              <span class="name-model">BLIP-VIT</span>
+            </div>
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="BLIP_PRETRAIN" onclick="controlTick(4)">
+              <span class="name-model">BLIP-PRETRAIN</span>
+            </div>
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="BEIT" onclick="controlTick(5)">
+              <span class="name-model">BEIT</span>
+            </div>
+            <div class="container-model">
+              <input type="checkbox" class="checkbox-model" value="BEIT_LARGE" onclick="controlTick(6)">
+              <span class="name-model">BEIT-LARGE</span>
+            </div>
+          </div>
+
+          <button type="button" id="submit-btn" onclick="selectModel(this)"> Submit</button>
+        </div>
+      </div>
     </div>
-    <button onclick="selectModel(this)"> OK </button> 
 
     <script>
       var useClipH = false, useClipH_XLM = false, useClipL = false, useBlipVit = false, useBlipPretrain = false, useBeit = false, useBeitLarge = false;
@@ -91,5 +131,5 @@
       window.location.href = 'search';
     }
     </script>
-</body>
+  </body>
 </html>
