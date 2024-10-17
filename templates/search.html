@@ -488,9 +488,9 @@
       },
       { 
         // Text
-      0: ['./distilled_keyframe/L03/V006/21525.jpg', 1],
+      0: ['./distilled_keyframe/L03/V006/21527.jpg', 1],
       1: ['./distilled_keyframe/L03/V006/21526.jpg', 1],
-      2: ['./distilled_keyframe/L01/V010/4450.jpg', 1],
+      2: ['./distilled_keyframe/L01/V010/4451.jpg', 1],
       3: ['./distilled_keyframe/L06/V013/34331.jpg', 1],
       4: ['./distilled_keyframe/L06/V013/34332.jpg', 1],
       5: ['./distilled_keyframe/L06/V013/34333.jpg', 1],
@@ -1562,7 +1562,7 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
-                    evaluationId = data['1']['id'];                    
+                    evaluationId = data['0']['id'];                    
                 })
         } catch (error) {
             console.error('Fetch error:', error);
@@ -1649,6 +1649,7 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
             })
                 .then(response => response.json())
                 .then(data => {
+                    alert(`${data['status']} - ${data['submission']} - ${data['message']} - ${data['description']}`);
                     console.log(data);
                 })
         } catch (error) {
