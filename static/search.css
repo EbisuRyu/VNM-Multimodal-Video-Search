@@ -43,7 +43,7 @@
   border-radius: 4px;
   background-color: #F5F4FD;
 }
-#inpQueryId {
+#inpVQA {
   width: 100px;
   height: 30px;
   padding: 0.5rem;
@@ -550,4 +550,22 @@ button {
 .clickedVote {
   outline: 2px solid blue;
   
+}
+.btnSubmit {
+  color: white;
+  top: 45%;
+  left: 0px;
+  width: 15px;
+  height: 15px;
+  padding: 3px;
+  position: absolute;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  border-width: 0px;
+  background-color: blue;
+}
+.clickedSubmit {
+  outline: 2px solid rgb(255, 98, 42);
 }
