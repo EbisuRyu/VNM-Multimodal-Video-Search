@@ -408,8 +408,7 @@
                 Clear
               </button>
             </div>
-            <span style="margin: 0px;">L</span><input placeholder="01" class="textarea enterToSearch" id="inpL"/>
-            <span style="margin: 0px;">/V</span><input placeholder="001" class="textarea enterToSearch" id="inpV"/>
+            
             <div>
               <input type="checkbox" onclick="controlTick(4)" />
               <span>Fusion</span>
@@ -434,7 +433,10 @@
             <button type="button" class="btnControl button" onclick="zoomframe(1, 1)">
               +
             </button>
-            <input type="text" placeholder="VQA" class="inpTopk input" id="inpVQA"/>
+            <span style="margin: 0px;">L</span><input placeholder="01" class="textarea enterToSearch" id="inpL"/>
+            <span style="margin: 0px;">/V</span><input placeholder="001" class="textarea enterToSearch" id="inpV"/>
+            <input type="text" placeholder="frame(ms)" class="inpTopk input" id="inpFrame" style="width:75px;"/>
+            <input type="text" placeholder="VQA" class="inpTopk input" id="inpVQA" style="width:45px;"/>
             <button type="button" class="btnControl button" onclick="SUBMIT()" style="background-color: green;color:white;padding:4px;" id="SUBMIT_btn">
               Export
             </button>
@@ -545,7 +547,8 @@
 
     var inpQueryId = document.getElementById('inpQueryId'),
         inpVQA = document.getElementById('inpVQA'),
-        inpPreviewRes = document.getElementById('inpPreviewRes');
+        inpPreviewRes = document.getElementById('inpPreviewRes'),
+        inpFrame = document.getElementById('inpFrame');
 
     var uploadForm = document.getElementById('uploadForm'), isOpenUploadForm = false;
     var isUpvote = true;
@@ -1637,12 +1640,23 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
     function SUBMIT() {
       SUBMIT_btn.classList.add('btnclicked');
       setTimeout(()=>{SUBMIT_btn.classList.remove('btnclicked');}, 200);
-
       var answer = {};
       if (inpVQA.value.trim() === '') { // KIS
-        answer = genAnswerKIS(SUBMIT_VIDEO_ID, SUBMIT_TIME_OF_FRAME, SUBMIT_TIME_OF_FRAME);
+        if (inpFrame.value.trim() !== '') { // custom frame
+          let nVideo = `L${inpL.value.trim()}_V${inpV.value.trim()}`;
+          let nFrame = inpFrame.value.trim();
+          answer = genAnswerKIS(nVideo, nFrame, nFrame);
+        } else {
+          answer = genAnswerKIS(SUBMIT_VIDEO_ID, SUBMIT_TIME_OF_FRAME, SUBMIT_TIME_OF_FRAME);
+        }
       } else { // VQA
-        answer = genAnswerQA(inpVQA.value.trim(), SUBMIT_VIDEO_ID, SUBMIT_TIME_OF_FRAME);
+        if (inpFrame.value.trim() !== '') { // custom frame
+          let nVideo = `L${inpL.value.trim()}_V${inpV.value.trim()}`;
+          let nFrame = inpFrame.value.trim();
+          answer = genAnswerQA(inpVQA.value.trim(), nVideo, nFrame);
+        } else {
+          answer = genAnswerQA(inpVQA.value.trim(), SUBMIT_VIDEO_ID, SUBMIT_TIME_OF_FRAME);
+        }
       }
       console.log(answer);
       const url = `https://eventretrieval.one/api/v2/submit/${evaluationId}?session=${sessionId}`;
