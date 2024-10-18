@@ -1193,11 +1193,13 @@
         } else {
           ResDict[1] = {...data};
           nHistory++;
+          /* history search
           let option = `<option value='${nHistory}'>${nHistory}.${query[4]}  ${query[5]}</option>`;
           historySearch.push({...ResDict[1]});
           selectFilter.innerHTML += option;
           selectFilter.value = nHistory;
           currentHistory = nHistory;
+          */
           if (isGroup[1]) {
             displayResGroup(1);
           } else {
