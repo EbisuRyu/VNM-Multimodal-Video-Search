@@ -778,7 +778,7 @@
     function metaQuery() {
       // BBox
       let objectbbox = '', colorbbox = '', objectnum = inpNumObj.value, objectclass = '', colorclass = '';
-      let ocr = inpOCR.value, tag = [...listTags].join(" "), topk = inpTopkBbox.value;
+      let asr = inpASR.value, ocr = inpOCR.value, tag = [...listTags].join(" "), topk = inpTopkBbox.value;
 
       let containerObj = drawingAreas;
       let listObjBBox = containerObj.getElementsByClassName('rectangleDraw');
@@ -836,7 +836,7 @@
         }
       }
       
-      return ['metadata', 2, topk, fussionBBox, ocr, tag, objectclass, colorclass, objectbbox, objectnum, colorbbox];
+      return ['metadata', 2, topk, fussionBBox, ocr, tag, objectclass, colorclass, objectbbox, objectnum, colorbbox, asr];
     }
 
     function txtQuery() {
