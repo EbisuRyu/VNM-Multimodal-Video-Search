@@ -330,6 +330,13 @@
              <div style="display:flex; margin-top: 2px;">
               <textarea placeholder="Query current scene" class="textarea inpQueryTxt enterToSearch" id="inpTxtCurrent"></textarea>
               <textarea placeholder="Query next scene" class="textarea inpQueryTxt enterToSearch" id="inpTxtNext"></textarea>
+              
+          <div id="uploadForm" style="display:none; background-color: #F5F4FD;position: absolute; top: 60px; right: 40px;">
+             <input type="file" id="imageUpload" accept="image/*">
+              <button class="btnControl" onclick="uploadImage()">Upload</button>
+            </div>
+              <button type="button" class="btnControl button" style="height:40px; width: 60px;" onclick="hideUploadForm()"> Search <br> by img </button>
+          
               <button type="button" class="btnSearch button" onclick="Search('embedding')">
                 SEARCH
               </button>
@@ -398,7 +405,7 @@
             <input type="text" placeholder="topk" class="inpTopk input enterToSearch" id="topkTxt"/>
             <div class="divSelect">
               <select class="selectBar" id="selectFilter">
-                <option value='0'>Search history</option>
+                <option value='0'>History</option>
               </select>
               <button type="button" class="btnControl button" onclick="clearHistory()">
                 Clear
@@ -543,6 +550,7 @@
         inpVQA = document.getElementById('inpVQA'),
         inpPreviewRes = document.getElementById('inpPreviewRes');
 
+    var uploadForm = document.getElementById('uploadForm'), isOpenUploadForm = false;
     var isUpvote = true;
 
     var selectedUpvote = new Set();
@@ -1510,9 +1518,9 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
     function hideDivMeta() {
       if (divMeta.style.display !== 'flex') {
         divMeta.style.display = 'flex';
-        inpTxtCurrent.style.width = '290px';
-        inpTxtNext.style.width = '290px';
-        selectFilter.style.width = '150px';
+        inpTxtCurrent.style.width = '240px';
+        inpTxtNext.style.width = '240px';
+        selectFilter.style.width = '70px';
       } else {
         divMeta.style.display = 'none';
         inpTxtCurrent.style.width = '500px';
@@ -1661,7 +1669,56 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
 
     LOGIN();
     //------
-    
+    function hideUploadForm() {
+      isOpenUploadForm = !isOpenUploadForm;
+      if (isOpenUploadForm) {
+        uploadForm.style.display = 'inline';
+      } else {
+        uploadForm.style.display = 'none';
+      }
+    }
+
+    function uploadImage() {
+      const imageInput = document.getElementById('imageUpload');
+      if (imageInput.files.length === 0) {
+        alert('Please select an image file to upload');
+        return;
+      }
+      const file = imageInput.files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+      model_info = [inpTopkTxt.value, useClipH, useClipH_XLM, useClipL, useBlipVit, useBlipPretrain, useBeit, useBeitLarge];
+      formData.append('model_info', JSON.stringify(model_info));
+
+      fetch('/upload_image', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data['error'] != null) {
+          alert(data['error']);
+        } else {
+          ResDict[1] = {...data};
+          nHistory++;
+          /* history search
+          let option = `<option value='${nHistory}'>${nHistory}.${query[4]}  ${query[5]}</option>`;
+          historySearch.push({...ResDict[1]});
+          selectFilter.innerHTML += option;
+          selectFilter.value = nHistory;
+          currentHistory = nHistory;
+          */
+          if (isGroup[1]) {
+            displayResGroup(1);
+          } else {
+            displayRes(1);
+          }
+        }
+      });
+    }
+
+    //----- Event listener -----
     // Drag drop frame
     var sourceFrame = null;
     function dragFrame(event) {
