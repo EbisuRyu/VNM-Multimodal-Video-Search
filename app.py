@@ -218,7 +218,7 @@ def process_query():
         # get video path or youtube link
         video_path = os.path.join('static', 'video', query[2]) + '.mp4'
         if not os.path.exists(video_path): # open on youtube
-            with open('static/media-info/' + query[2] + '.json', 'r') as f:
+            with open('static/media-info/' + query[2] + '.json', 'r', encoding='utf-8') as f:
                 info_file = json.load(f)
                 return jsonify('youtube', fps, info_file['watch_url'])
         
