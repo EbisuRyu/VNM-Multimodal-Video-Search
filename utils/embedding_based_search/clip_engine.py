@@ -2,6 +2,7 @@ import torch
 import faiss
 import numpy as np
 import open_clip
+from PIL import Image
 from utils.embedding_based_search.utils import load_bin_file, load_id2image_file, result_format, find_index_from_image_path
 
 
@@ -11,7 +12,7 @@ class CLIP:
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.index = load_bin_file(clip_bin_file)
         self.id2image_fps = load_id2image_file(clip_id2image_path)
-        self.model, _, _ = open_clip.create_model_and_transforms(
+        self.model, _, self.preprocess = open_clip.create_model_and_transforms(
             model_name=clip_model,
             device=self.__device,
             pretrained=self.pretrained_info(clip_model)
@@ -29,14 +30,22 @@ class CLIP:
         return pretrained
     
     def image_search(self, query_image_path, image_path_subset, top_k):
+        id_query = None
         for index, image_path in self.id2image_fps.items():
             if image_path == query_image_path:
                 id_query = index
                 break
-        image_features = self.index.reconstruct(id_query)
-        image_features = np.expand_dims(image_features, 0)
-        ##### IMAGE FEATURES EXTRACTING #####
-        image_features = self.index.reconstruct(id_query).reshape(1, -1)
+        if id_query is not None:
+            image_features = self.index.reconstruct(id_query)
+            image_features = np.expand_dims(image_features, 0)
+        else:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            image = self.preprocess(Image.open(query_image_path)).unsqueeze(0)
+            image = torch.cat(image, dim=0).to(device)
+            image_features = self.model.encode_image(image)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            image_features = image_features.cpu().numpy().astype(np.float32).flatten()
+            image_features = np.expand_dims(image_features, 0)
         ##### SEARCHING #####
         if image_path_subset is None:
             scores, idx_image = self.index.search(image_features, top_k)

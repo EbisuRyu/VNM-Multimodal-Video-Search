@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-  <title>AIO-Annivators</title>
-  <meta property="og:title" content="AIO-Annivators" />
+  <title>AViSearch - Search</title>
+  <meta property="og:title" content="AViSearch - Search" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta charset="utf-8" />
   <link
@@ -431,7 +431,7 @@
               +
             </button>
             <input type="text" placeholder="VQA" class="inpTopk input" id="inpVQA"/>
-            <button type="button" class="btnControl button" onclick="openPreview()" style="background-color: green;color:white;padding:4px;">
+            <button type="button" class="btnControl button" onclick="SUBMIT()" style="background-color: green;color:white;padding:4px;" id="SUBMIT_btn">
               Export
             </button>
           </div>
@@ -488,9 +488,9 @@
       },
       { 
         // Text
-      0: ['./distilled_keyframe/L06/V013/34328.jpg', 1],
-      1: ['./distilled_keyframe/L06/V013/34329.jpg', 1],
-      2: ['./distilled_keyframe/L06/V013/34330.jpg', 1],
+      0: ['./distilled_keyframe/L03/V006/21527.jpg', 1],
+      1: ['./distilled_keyframe/L03/V006/21526.jpg', 1],
+      2: ['./distilled_keyframe/L01/V010/4451.jpg', 1],
       3: ['./distilled_keyframe/L06/V013/34331.jpg', 1],
       4: ['./distilled_keyframe/L06/V013/34332.jpg', 1],
       5: ['./distilled_keyframe/L06/V013/34333.jpg', 1],
@@ -546,6 +546,10 @@
     var isUpvote = true;
 
     var selectedUpvote = new Set();
+
+    var SUBMIT_VIDEO_ID = '', SUBMIT_TIME_OF_FRAME = 0;
+
+    var SUBMIT_btn = document.getElementById('SUBMIT_btn');
     //--------------------Function--------------------
 
     /* Show dropdown when click Labels, Labels recommend, Tags, Tags recommend */
@@ -973,6 +977,9 @@
     <button type="button" class="btnSimilarity button" onclick="similaritySearch('${frame}')">
       🔍
     </button>
+    <button type="button" class="btnSubmit button" onclick="submitFrame(this, '${nVideo}', '${nFrame}')">
+      ✓
+    </button>
     `: ''}
   </div>
   `;
@@ -1186,11 +1193,13 @@
         } else {
           ResDict[1] = {...data};
           nHistory++;
+          /* history search
           let option = `<option value='${nHistory}'>${nHistory}.${query[4]}  ${query[5]}</option>`;
           historySearch.push({...ResDict[1]});
           selectFilter.innerHTML += option;
           selectFilter.value = nHistory;
           currentHistory = nHistory;
+          */
           if (isGroup[1]) {
             displayResGroup(1);
           } else {
@@ -1342,8 +1351,9 @@
         // Clear the set after moving frames
       selectedUpvote = new Set();
     }
+
     function playVideo(nVideo, nFrame) { //  nVideo="L01_V001" nFrame="00001"
-      let querySearch = {'query': ['video', 1, nVideo]}; // get frameRate
+    let querySearch = {'query': ['video', 1, nVideo]}; // get frameRate
       fetch('/process_query', {
         method: 'POST',
         headers: {
@@ -1354,25 +1364,22 @@
       .then(response => response.json())
       .then(data => {
         console.log(data);
-        let type_video = data[0]; 
-        let keyframe_time = Math.round(parseInt(nFrame, 10) / data[1]);
-        let url_video = data[2];
-        if (type_video === 'local_video') { // Show local video
-          const newWindow = window.open('', '_blank');
-          const htmlContent = `<!DOCTYPE html><html><head><title>${nVideo}</title></head><body><video id="videoPlayer" controls autoplay><source src="${url_video}" type="video/mp4">Your browser does not support the video tag.</video><script>document.getElementById('videoPlayer').onloadedmetadata = function() { this.currentTime = ${keyframe_time}; };` + '</scr' + 'ipt></body></html>';
-          // Write HTML content to the new window
-          newWindow.document.write(htmlContent);
-          // Close the document to finish writing
-          newWindow.document.close();
-        } else { // open youtube video
-          let urlVideo = url_video + '&t=' + keyframe_time + 's';
-          console.log(urlVideo);
-          const newWindow = window.open(urlVideo, '_blank');
-        }
-       
-        console.log(url_video);
-        console.log(keyframe_time);
-      });
+      let type_video = data[0];
+      let keyframe_time = Math.round(parseInt(nFrame, 10) / data[1]); 
+      let url_video = data[2];
+      if (type_video === 'local_video') { // Show local video
+        const newWindow = window.open('', '_blank');
+        const htmlContent = `<!DOCTYPE html><html><head><title>${nVideo}</title></head><body><video id="videoPlayer" controls autoplay><source src="${url_video}" type="video/mp4">Your browser does not support the video tag.</video><script>document.getElementById('videoPlayer').onloadedmetadata = function() { this.currentTime = ${keyframe_time}; };` + '</scr' + 'ipt></body></html>';
+        // Write HTML content to the new window
+        newWindow.document.write(htmlContent);
+        // Close the document to finish writing
+        newWindow.document.close();
+      } else { // open youtube video
+        let urlVideo = url_video + '&t=' + keyframe_time + 's';
+        console.log(urlVideo);
+        const newWindow = window.open(urlVideo, '_blank');
+      }
+    });  
     }
 
     const listLabel_Tag = [[
@@ -1513,6 +1520,147 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
         selectFilter.style.width = '400px';
       }
     }
+
+    //----- submit -----
+    var sessionId = '', evaluationId = '';
+    function convert_to_miliseconds(hours=0, minutes=0, seconds=0) {
+        return (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+    }
+    
+    function LOGIN() {
+        const data = {
+            "username": "team05",
+            "password": "bBmwt3Gb3D"
+        }
+        try {
+            fetch('https://eventretrieval.one/api/v2/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    getEvaluationId(data['sessionId']);
+                    console.log(data);
+                })
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+
+    function getEvaluationId(_sessionId) {
+        sessionId = _sessionId;
+        const url = `https://eventretrieval.one/api/v2/client/evaluation/list?session=${_sessionId}`;
+        try {
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    evaluationId = data['0']['id'];                    
+                })
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+
+    function genAnswerQA(answer, videoId, frameTime) {
+        return {
+          "answerSets": [
+            {
+              "answers": [
+                {
+                  "text": answer + '-' + videoId + '-' + frameTime
+                }
+              ]
+            }
+          ]
+        };     
+    }
+  
+    function genAnswerKIS(videoId, startTime, endTime) {
+        return {
+          "answerSets": [
+            {
+              "answers": [
+                {
+                  "mediaItemName": videoId,
+                  "start": startTime,
+                  "end": endTime
+                }
+              ]
+            }
+          ]
+        };
+    }
+
+    function submitFrame(btn, nVideo, nFrame) {
+      // remove 'clickedSubmit' class of all buttons
+      let listBtnSubmit = document.getElementsByClassName('btnSubmit');
+      for (let btnSubmit of listBtnSubmit) {
+        btnSubmit.classList.remove('clickedSubmit');
+      }
+
+      // add 'clickedSubmit' class to the clicked button
+      btn.classList.add('clickedSubmit');
+
+      let querySearch = {'query': ['video', 1, nVideo]}; // get frameRate
+      fetch('/process_query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(querySearch) 
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+
+        SUBMIT_TIME_OF_FRAME = Math.round(parseInt(nFrame, 10) / data[1] * 1000); // convert frame to ms
+        SUBMIT_VIDEO_ID = nVideo;
+
+    });  
+    }
+
+    function SUBMIT() {
+      SUBMIT_btn.classList.add('btnclicked');
+      setTimeout(()=>{SUBMIT_btn.classList.remove('btnclicked');}, 200);
+
+      var answer = {};
+      if (inpVQA.value.trim() === '') { // KIS
+        answer = genAnswerKIS(SUBMIT_VIDEO_ID, SUBMIT_TIME_OF_FRAME, SUBMIT_TIME_OF_FRAME);
+      } else { // VQA
+        answer = genAnswerQA(inpVQA.value.trim(), SUBMIT_VIDEO_ID, SUBMIT_TIME_OF_FRAME);
+      }
+      console.log(answer);
+      const url = `https://eventretrieval.one/api/v2/submit/${evaluationId}?session=${sessionId}`;
+        try {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(answer)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(`${data['status']} - ${data['submission']} - ${data['message']} - ${data['description']}`);
+                    console.log(data);
+                })
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+
+    LOGIN();
+    //------
     
     // Drag drop frame
     var sourceFrame = null;
@@ -1548,7 +1696,7 @@ var ResSearch = [document.getElementById('containerLabelSearch'), document.getEl
     inpVQA.addEventListener('keydown', function(event) {
       if (event.key === "Enter") {
         event.preventDefault(); // Ngăn hành động mặc định nếu cần
-        openPreview();
+        SUBMIT();
       }
     });
 

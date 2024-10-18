@@ -1,7 +1,10 @@
 from utils.embedding_based_search.utils import load_bin_file, load_id2image_file, result_format, find_index_from_image_path
 from extra.unilm.beit3.modeling_finetune import beit3_base_patch16_224_retrieval, beit3_large_patch16_384_retrieval
 from extra.unilm.beit3.utils import load_model_and_may_interpolate
+from torchvision.transforms.functional import InterpolationMode
 from transformers import XLMRobertaTokenizer
+from torchvision import transforms
+from PIL import Image
 import numpy as np
 import torch
 import faiss
@@ -28,12 +31,29 @@ class BEIT:
         self.model.eval()
         
     def image_search(self, query_image_path, image_path_subset, top_k):
+        id_query = None
         for index, image_path in self.id2image_fps.items():
             if image_path == query_image_path:
                 id_query = index
                 break
-        image_features = self.index.reconstruct(id_query)
-        image_features = np.expand_dims(image_features, 0)
+            
+        if id_query is not None:
+            image_features = self.index.reconstruct(id_query)
+            image_features = np.expand_dims(image_features, 0)
+        else: 
+            transform = transforms.Compose([
+                transforms.Resize((224, 224), interpolation=InterpolationMode.BICUBIC),
+                transforms.ToTensor(),
+            ])
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            raw_image = Image.open(query_image_path).convert('RGB')
+            image = transform(raw_image).unsqueeze(0).to(device)
+            image = torch.cat(image, dim=0).to(device)
+            image_feature, _ = self.model(image=image, only_infer=True)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            image_features = image_feature.cpu().numpy().astype(np.float32).flatten()
+            image_features = np.expand_dims(image_features, 0)
+        
         if image_path_subset is None:
             scores, idx_image = self.index.search(image_features, top_k)
         else:

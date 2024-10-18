@@ -163,7 +163,9 @@ cython_debug/
 
 
 # My Ignore Folder
+extraction/
 dataset/
 dict/
+static/
 static/distilled_keyframe
 static/video

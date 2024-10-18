@@ -1,6 +1,7 @@
 from utils.object_color_search.object_color_search import ObjectColorSearch
 from utils.filter.tag_recommend import TagRecommender
 from utils.filter.filter import Filter
+from utils.asr.asr_search import AsrSearch
 from utils.combine_module.utils import merge_searching_results_by_addition
 from utils.object_color_search.utils import all_values_none
 
@@ -14,8 +15,12 @@ class SearchingMethod:
         self.filter = Filter(
             tag_search_type='bm25'
         )
+        self.asr_search = AsrSearch(
+            json_folder='./dict/asr',
+            stopwords=None
+        )
 
-    def search(self, ocr_query, tag_query, oclass_queries, bbox_queries, image_path_subset, top_k):
+    def search(self, asr_query, ocr_query, tag_query, oclass_queries, bbox_queries, image_path_subset, top_k):
         list_results = []
         if ocr_query is not None or tag_query is not None:
             result = self.filter.search(
@@ -33,6 +38,11 @@ class SearchingMethod:
                 top_k=top_k
             )
             list_results.append(result)
+        if asr_query is not None:
+            result = self.asr_search.search(
+                input_query=asr_query,
+                top_k=top_k
+            )
         final_result = merge_searching_results_by_addition(list_results)
         final_top_k_result = dict(list(final_result.items())[:top_k])
         return final_top_k_result
@@ -55,8 +65,9 @@ class MetadataSpace:
     def delete_history(self):
         self.current_result = {}
 
-    def search(self, ocr_query, tag_query, oclass_queries, bbox_queries, embedding_result_subset, top_k):
+    def search(self, asr_query, ocr_query, tag_query, oclass_queries, bbox_queries, embedding_result_subset, top_k):
         search_params = {
+            'asr_query': asr_query,
             'ocr_query': ocr_query,
             'tag_query': tag_query,
             'oclass_queries': oclass_queries,
