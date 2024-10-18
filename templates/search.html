@@ -331,12 +331,9 @@
               <textarea placeholder="Query current scene" class="textarea inpQueryTxt enterToSearch" id="inpTxtCurrent"></textarea>
               <textarea placeholder="Query next scene" class="textarea inpQueryTxt enterToSearch" id="inpTxtNext"></textarea>
               
-          <div id="uploadForm" style="display:none; background-color: #F5F4FD;position: absolute; top: 60px; right: 40px;">
-             <input type="file" id="imageUpload" accept="image/*">
-              <button class="btnControl" onclick="uploadImage()">Upload</button>
-            </div>
-              <button type="button" class="btnControl button" style="height:40px; width: 60px;" onclick="hideUploadForm()"> Search <br> by img </button>
-          
+              <input type="file" id="imageUpload" accept="image/*" style="display:none;" onchange="uploadImage()">
+              <button type="button" class="btnControl button" style="height:40px; width: 60px;" onclick="document.getElementById('imageUpload').click()"> Search <br> by img </button>
+              
               <button type="button" class="btnSearch button" onclick="Search('embedding')">
                 SEARCH
               </button>
