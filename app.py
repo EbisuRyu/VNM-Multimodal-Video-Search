@@ -85,6 +85,8 @@ def process_query():
             return jsonify(okresponse)
 
         if query[1] == 2:  # option = 2: search [type, option, topk, fussion, ocr, tag, object_class, color_class, object_bbox, object_number, color_bbox]
+            searching_system.metadata_space.delete_history()
+
             searching_system.metadata_space.update_fusion_mode(bool(query[3]))
             searching_system.current_embedding_result_subset = list(searching_system.embedding_space.current_result.keys()) if bool(query[3]) else None
 
@@ -128,8 +130,8 @@ def process_query():
             return jsonify(okresponse)
 
         if query[1] == 2:  # option = 2: search [type, option, topk, fussion, query_text_1, query_text_2, local_L, local_V, clip_h14, clip_h14_xlm, clip_l14, blip_vit, blip_pretrain, beit_base, beit_large]
-            startTime = time.time()
-
+            searching_system.embedding_space.delete_history()
+            
             searching_system.embedding_space.update_fusion_mode(bool(query[3]))
             searching_system.current_metadata_result_subset = list(searching_system.metadata_space.current_result.keys()) if bool(query[3]) else None
 
