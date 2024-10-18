@@ -41,10 +41,10 @@ class CLIP:
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             image = self.preprocess(Image.open(query_image_path)).unsqueeze(0)
-            image = torch.cat(image, dim=0).to(device)
+            image = torch.cat([image], dim=0).to(device)
             image_features = self.model.encode_image(image)
             image_features /= image_features.norm(dim=-1, keepdim=True)
-            image_features = image_features.cpu().numpy().astype(np.float32).flatten()
+            image_features = image_features.cpu().detach().numpy().astype(np.float32).flatten()
             image_features = np.expand_dims(image_features, 0)
         ##### SEARCHING #####
         if image_path_subset is None:
