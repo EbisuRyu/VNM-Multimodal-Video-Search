@@ -84,12 +84,13 @@ def process_query():
             print('delete meta')
             return jsonify(okresponse)
 
-        if query[1] == 2:  # option = 2: search [type, option, topk, fussion, ocr, tag, object_class, color_class, object_bbox, object_number, color_bbox]
+        if query[1] == 2:  # option = 2: search [type, option, topk, fussion, ocr, tag, object_class, color_class, object_bbox, object_number, color_bbox, asr]
             searching_system.metadata_space.update_fusion_mode(bool(query[3]))
             searching_system.current_embedding_result_subset = list(searching_system.embedding_space.current_result.keys()) if bool(query[3]) else None
 
             print(bool(query[3]))
             result_info = searching_system.metadata_space.search(
+                asr_query=None if query[11] == '' else query[11],
                 ocr_query=None if query[4] == '' else query[4],
                 tag_query=None if query[5] == '' else query[5],
                 oclass_queries={
