@@ -32,7 +32,8 @@ class AsrSearch:
                             "video_name": entry["video_name"],
                             "start_frame": entry["start_frame"],
                             "end_frame": entry["end_frame"],
-                            "text": entry["text"]
+                            "text": entry["text"],
+                            "key_frames": entry["key_frames"]
                         })
 
     def _initialize_bm25(self):

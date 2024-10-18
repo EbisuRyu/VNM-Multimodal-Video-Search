@@ -17,6 +17,7 @@ class MetadataSpaceInterface:
     def handle_metadata_searching(self, searching_system, translator):
         while True:
             result = searching_system.metadata_space.search(
+                asr_query=input('ASR query: ') or None,
                 ocr_query=input('OCR query: ') or None,
                 tag_query=input('Tag query: ') or None,
                 oclass_queries={
@@ -133,11 +134,11 @@ class EmbeddingSpaceInterface:
 class SearchingSystem:
     def __init__(self):
         self.embedding_space = EmbeddingSpace(
-            use_clip_h14=False,
+            use_clip_h14=True,
             use_clip_h14_xlm=False,
             use_clip_l14=False,
             use_blip_vit=False,
-            use_blip_pretrain=True, 
+            use_blip_pretrain=False, 
             use_base_beit=False,
             use_large_beit=False
         )

@@ -43,6 +43,7 @@ class SearchingMethod:
                 input_query=asr_query,
                 top_k=top_k
             )
+            list_results.append(result)
         final_result = merge_searching_results_by_addition(list_results)
         final_top_k_result = dict(list(final_result.items())[:top_k])
         return final_top_k_result
