@@ -48,10 +48,10 @@ class BEIT:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             raw_image = Image.open(query_image_path).convert('RGB')
             image = transform(raw_image).unsqueeze(0).to(device)
-            image = torch.cat(image, dim=0).to(device)
-            image_feature, _ = self.model(image=image, only_infer=True)
+            image = torch.cat([image], dim=0).to(device)
+            image_features, _ = self.model(image=image, only_infer=True)
             image_features /= image_features.norm(dim=-1, keepdim=True)
-            image_features = image_feature.cpu().numpy().astype(np.float32).flatten()
+            image_features = image_features.cpu().detach().numpy().astype(np.float32).flatten()
             image_features = np.expand_dims(image_features, 0)
         
         if image_path_subset is None:
