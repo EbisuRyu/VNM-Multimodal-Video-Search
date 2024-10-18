@@ -70,6 +70,38 @@ def search():
 
     return render_template('search.html', model_list=model_list)
 
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image uploaded!"})
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"error": "No selected file!"})
+    
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(file_path)
+
+    model_info_str = request.form['model_info']
+    model_info = json.loads(model_info_str)
+    # image similarity [topk, clip_h14, clip_h14_xlm, clip_l14, blip_vit, blip_pretrain, beit_base, beit_large]
+    searching_system.embedding_space.update_model({
+        'clip_h14_engine': bool(model_info[1]),
+        'clip_h14_xlm_engine': bool(model_info[2]),
+        'clip_l14_engine': bool(model_info[3]),
+        'blip_vit_engine': bool(model_info[4]),
+        'blip_pretrain_engine': bool(model_info[5]),
+        'beit_base_engine': bool(model_info[6]),
+        'beit_large_engine': bool(model_info[7])
+    })
+    result = searching_system.embedding_space.image_similarity(
+        query_image_path=file_path,
+        top_k=100 if model_info[0] == '' else int(model_info[0])
+    )
+    searching_system.current_embedding_result_subset = list(result.keys())
+
+    result_with_index = {i: [key, float(value)] for i, (key, value) in enumerate(result.items())}  # add index to result_info {0: [key, value], 1: [key, value], ...}
+    return jsonify(result_with_index)
 
 @app.route('/process_query', methods=['POST'])
 def process_query():
